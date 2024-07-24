@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration elversion="6.1">
+    <name>MCI_CFG_PARDIS_TOKEN_RESPONSE</name>
+    <version major="1" minor="0" defect="0" patch="PRE6"/>
+    <description>Creating Record to call Pardis Token Resource</description>
+    <type>
+        <collector>false</collector>
+        <intermediate>false</intermediate>
+        <decoder>false</decoder>
+        <businesslogic>true</businesslogic>
+        <blt>false</blt>
+        <encoder>false</encoder>
+        <distributor>false</distributor>
+        <standalone>false</standalone>
+        <interface>false</interface>
+    </type>
+    <nodebase>perl_node</nodebase>
+    <attributes>
+        <application_commit>false</application_commit>
+        <schedulable>true</schedulable>
+        <realtime>false</realtime>
+    </attributes>
+    <scalability>
+        <none></none>
+    </scalability>
+    <parameters>
+        <parameter name="Token-Table-Name">
+            <value>ACCESS_TOKENS</value>
+            <description>Access Token Table Name</description>
+            <value_type>
+                <any/>
+            </value_type>
+            <attributes>
+                <mandatory>true</mandatory>
+                <hidden>false</hidden>
+                <environment>false</environment>
+                <installation_specific>false</installation_specific>
+            </attributes>
+        </parameter>
+    </parameters>
+    <files>
+        <file os="AnyOS" path="./" editable="false" name="AnyOS/app_RestTokenResponse.pl">
+            <export>
+                <libpath>false</libpath>
+                <perl5lib>false</perl5lib>
+            </export>
+        </file>
+    </files>
+    <messages>
+        <message key="BLN300" type="E">
+            <text>%s</text>
+            <explanation>%s</explanation>
+        </message>
+        <message key="BLN200" type="W">
+            <text>%s</text>
+            <explanation>%s</explanation>
+        </message>
+    </messages>
+    <docs/>
+    <libraries>
+        <library name="EL_LIB_NODE_EXTENSIONS" min_major="1" min_minor="1" min_defect="1" exactversion="false"/>
+        <library name="EL_LIB_TRS" min_major="1" min_minor="2" min_defect="0" exactversion="false"/>
+    </libraries>
+    <storages>
+        <storage name="INVALID_RESPONSE">
+            <description>Invalid Response Storage</description>
+        </storage>
+    </storages>
+    <links>
+    </links>
+    <auditkeys/>
+</configuration>
