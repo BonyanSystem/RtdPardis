@@ -5,19 +5,18 @@ import com.bonyan.rtd.entity.RtdAction;
 import com.comptel.mc.node.EventRecord;
 import com.comptel.mc.node.EventRecordService;
 import com.comptel.mc.node.Field;
-import javafx.util.Pair;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChunkWriterService {
 
     public static final String REQUEST_ACTION_TABLE_NAME = "Request_Action";
     public static final String REQUEST_CHUNK_TABLE_NAME = "Request_Chunk";
 
-//    private EventRecordWriterService eventRecordWriterService;
+    //    private EventRecordWriterService eventRecordWriterService;
     private EventRecordService eventRecordService;
     private TimesTenDbWriterService timesTenDbWriterService;
     private String outputPortName;
@@ -32,7 +31,7 @@ public class ChunkWriterService {
         this.outputPortName = outputPortName;
     }
 
-    public void writeRtdPardisRecord(RtdAction action, List<Pair<String, Integer>> chunkList) {
+    public void writeRtdPardisRecord(RtdAction action, List<Map.Entry<String, Integer>> chunkList) {
         EventRecord eventRecord = eventRecordService.newRecord();
 
         Field actionBlock = eventRecord.addField("Action");
@@ -42,7 +41,7 @@ public class ChunkWriterService {
 
         Field chunkListBlock = eventRecord.addField("ChunkList");
         int i = 1;
-        for (Pair<String, Integer> chunkPair: chunkList) {
+        for (Map.Entry<String, Integer> chunkPair : chunkList) {
             chunkListBlock.addField("msisdn_" + i, chunkPair.getKey());
             chunkListBlock.addField("retryCount_" + i, chunkPair.getValue().toString());
             i++;
@@ -50,14 +49,14 @@ public class ChunkWriterService {
         eventRecordService.write(outputPortName, eventRecord);
     }
 
-    public void writeRecordInTimesTen(RtdAction action, List<Pair<String, Integer>> chunkList) {
+    public void writeRecordInTimesTen(RtdAction action, List<Map.Entry<String, Integer>> chunkList) {
         try {
             requestActionColumns.get("request_id").setValue(action.getRequestId());
             requestActionColumns.get("action_name").setValue(action.getActionName());
             requestChunkColumns.get("request_id").setValue(action.getActionName());
             timesTenDbWriterService.insertRecord(REQUEST_ACTION_TABLE_NAME, requestActionColumns.values());
 
-            for (Pair<String, Integer> chunkPair: chunkList) {
+            for (Map.Entry<String, Integer> chunkPair : chunkList) {
                 requestChunkColumns.get("msisdn").setValue(chunkPair.getKey());
                 requestChunkColumns.get("retry_count").setValue(chunkPair.getValue());
                 timesTenDbWriterService.insertRecord(REQUEST_CHUNK_TABLE_NAME, requestChunkColumns.values());

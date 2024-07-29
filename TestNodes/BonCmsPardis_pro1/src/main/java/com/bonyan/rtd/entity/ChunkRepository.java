@@ -1,8 +1,7 @@
 package com.bonyan.rtd.entity;
 
-import javafx.util.Pair;
-
 import java.util.HashMap;
+import java.util.Map;
 
 public class ChunkRepository extends HashMap<RtdAction, RecordList> {
 
@@ -11,7 +10,7 @@ public class ChunkRepository extends HashMap<RtdAction, RecordList> {
     }
 
     public void addActionIfNotExist(RtdAction rtdAction) {
-        if (!this.hasAction(rtdAction)){
+        if (!this.hasAction(rtdAction)) {
             this.put(rtdAction, new RecordList());
         }
     }
@@ -27,9 +26,13 @@ public class ChunkRepository extends HashMap<RtdAction, RecordList> {
         return this.get(rtdAction);
     }
 
-    public int addRecord(RtdAction rtdAction, Pair<String, Integer> msisdn) {
-        this.get(rtdAction).add(msisdn);
-        return this.get(rtdAction).size();
+    public int addRecord(RtdAction rtdAction, Map.Entry<String, Integer> msisdn) {
+        this.getRecords(rtdAction).add(msisdn);
+        int size = 0;
+        for (RecordList msisdnPair: this.values()) {
+            size += msisdnPair.size();
+        }
+        return size;
     }
 
     public String chunkToJsonString(RtdAction rtdAction) {

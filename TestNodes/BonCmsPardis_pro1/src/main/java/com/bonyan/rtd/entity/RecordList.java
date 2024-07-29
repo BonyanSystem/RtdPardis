@@ -1,8 +1,7 @@
 package com.bonyan.rtd.entity;
 
-import javafx.util.Pair;
-
 import java.util.ArrayList;
+import java.util.Map;
 
-public class RecordList extends ArrayList<Pair<String,Integer>> {
+public class RecordList extends ArrayList<Map.Entry<String, Integer>> {
 }
