@@ -1,14 +1,14 @@
 package com.bonyan.rtd;
 
 import com.bonyan.rtd.entity.ChunkRepository;
+import com.bonyan.rtd.entity.RecordList;
 import com.bonyan.rtd.entity.RtdAction;
 import com.comptel.eventlink.core.Nodebase;
 import com.comptel.mc.node.*;
+import com.comptel.mc.node.logging.NodeLoggerFactory;
+import com.comptel.mc.node.logging.TxeLogger;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,23 +16,32 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
 //        , LookupServiceUser
 {
 
-    private static Logger logger = Logger.getLogger(PardisBLN.class.getName());
-
+    private static final Logger logger = Logger.getLogger(PardisBLN.class.getName());
+    private static final TxeLogger nodeLogger =
+            NodeLoggerFactory.getNodeLogger(PardisBLN.class.getCanonicalName());
     public NodeContext nodeContext;
     private EventRecord currentRecord;
     private EventRecordService eventRecordService;
     private ChunkRepository chunkRepository;
-    private Integer MAX_CHUNK_SIZE;
+    private Integer MAX_CHUNK_SIZE_PARAM;
+    private String SOURCE_NUM_PARAM;
+    private String REQUEST_URI;
+    private String REQUEST_ID;
+    private String REMOTE_SCHEME;
+    private String REMOTE_ADDRESS;
+    private String REMOTE_PORT;
+    private String HEADER_HOST;
+    private int chunker_writer_sleep_time;
 
 //    private LookupService lookupService;
 //    private String lookupServer;
 //    private String actionTableName;
 //    private LookupTable actionTable;
 
-//    private String timesTenUser;
-//    private String timesTenPassword;
-//    private String timesTenDatasource;
-//    private String timesTenDriver;
+    private String timesTenUser;
+    private String timesTenPassword;
+    private String timesTenDatasource;
+    private String timesTenDriver;
 
     private HashMap<String, String> actionMessages;
 
@@ -42,7 +51,12 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
     @Override
     public void init(NodeContext nodeContext) throws Exception {
         try {
+//            TimesTenServiceImpl timesTenService = new TimesTenServiceImpl();
+
+            nb_trace("node init start", 0);
+            nodeLogger.info("nodeLogger: node init start");
             actionMessages = new HashMap<>();
+
             actionMessages.put("general_loan_content1", "Sms message content for action id:  general_loan_content1 ");
             actionMessages.put("general_loan_content2", "Sms message content for action id:  general_loan_content2 ");
             actionMessages.put("general_loan_content3", "Sms message content for action id:  general_loan_content3 ");
@@ -53,11 +67,17 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
             actionMessages.put("general_loan_content8", "Sms message content for action id:  general_loan_content8 ");
             actionMessages.put("general_loan_content9", "Sms message content for action id:  general_loan_content9 ");
             actionMessages.put("general_loan_content10", "Sms message content for action id: general_loan_content10");
+            nb_trace("action messages map initialized", 0);
+            nodeLogger.info("action messages map initialized");
 
 //            timesTenUser = nodeContext.getParameter("timesTenUser");
+//            timesTenUser = "user";
 //            timesTenPassword = nodeContext.getParameter("timesTenPassword");
+//            timesTenPassword = "";
 //            timesTenDatasource = nodeContext.getParameter("timesTenDatasource");
+//            timesTenDatasource = "jdbc:timesten:ccFdcDS";
 //            timesTenDriver = nodeContext.getParameter("timesTenDriver");
+//            timesTenDriver = "com.timesten.jdbc.TimesTenDriver";
 //
 //            lookupServer = nodeContext.getParameter("lookupServer");
 //            actionTableName = nodeContext.getParameter("actionTableName");
@@ -66,157 +86,262 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
 //                    timesTenUser, timesTenPassword, timesTenDatasource, timesTenDriver);
 
 //            Connection connection = dataSource.getConnection();
+//            String s = connection.nativeSQL("SELECT 1 FROM EL_ACCESS_TOKENS");
+//            nodeLogger.info("nodeLogger_info__connection.nativeSQL: %s", s);
+//            nodeLogger.debug("nodeLogger_debug__connection.nativeSQL: %s", s);
+//            nb_diag(99, "connection.nativeSQL" + s);
             this.nodeContext = nodeContext;
-            this.MAX_CHUNK_SIZE = nodeContext.getParameterInt("chunker-max-size");
-//            this.MAX_CHUNK_SIZE = 5;
+            this.MAX_CHUNK_SIZE_PARAM = nodeContext.getParameterInt("chunker-max-size");
+            this.chunker_writer_sleep_time = nodeContext.getParameterInt("chunker-writer-sleep-time");
+            this.SOURCE_NUM_PARAM = nodeContext.getParameter("source-number");
+//            this.SOURCE_NUM_PARAM = "981000";
+            this.REQUEST_URI = nodeContext.getParameter("request-uri");
+//            this.REQUEST_URI = "/api/v2/sendBulk";
+            this.REMOTE_SCHEME = nodeContext.getParameter("remote-scheme");
+//            this.REMOTE_SCHEME = "http";
+            this.REMOTE_ADDRESS = nodeContext.getParameter("remote-address");
+//            this.REMOTE_ADDRESS = "192.168.5.84";
+            this.REMOTE_PORT = nodeContext.getParameter("remote-port");
+//            this.REMOTE_PORT = "4080";
+            this.HEADER_HOST = nodeContext.getParameter("header-host");
+//            this.HEADER_HOST = "192.168.5.84:4080";
+            nodeLogger.info("nodeLogger: nodeContext.getParameters:" + nodeContext.getParameters());
+            nb_trace(nodeContext.getParameters().toString(), 0);
+
             this.chunkRepository = new ChunkRepository();
 //            this.actionTable = lookupService.getTable(lookupServer, actionTableName, true);
 
             logger.info("Init------------");
+            nodeLogger.info("nodeLogger: node init end");
         } catch (Exception ex) {
+            nodeLogger.info("nodeLogger: Exeption in Init method: " + ex.getMessage());
+            nb_trace("Exeption in Init method: " + ex.getMessage(), 0);
             logger.fine("Error in Init" + ex.getMessage());
         }
     }
 
     @Override
     public void process(EventRecord eventRecord) throws Exception {
+        nb_trace("Processing Input record", 1);
+        nb_trace("Input record: " + eventRecord.toString(), 1);
+        nodeLogger.info("nodeLogger: Processing Input record");
+        nodeLogger.info("nodeLogger: Input record: " + eventRecord);
+
         logger.info("Processing record");
         currentRecord = eventRecord;
-        logger.info("Processing record");
         int chunkSize;
-//        if (eventRecord.getFields().contains("actionid")) {
         RtdAction rtdAction = new RtdAction(getFieldStringValue("actionid"));
-//            if (eventRecord.getFields().contains("msisdn")) {
         Map.Entry<String, Integer> msisdnPair = new AbstractMap.SimpleEntry<>(
                 this.getFieldStringValue("msisdn"),
                 this.getFieldIntegerValue("count"));
         chunkSize = chunkRepository.addRecord(rtdAction, msisdnPair);
-//        rtdAction.setActionMessageContent(actionMessages.get(rtdAction.getActionName()));
-//        rtdAction.generateNewId();
-
-//                writeRtdPardisRecord(rtdAction, chunkRepository.getRecords(rtdAction));
-//            }
         //else throw error invalid record
-//        }
-
-
-        //else throw error invalid record
-        if (MAX_CHUNK_SIZE.equals(chunkSize)) {
+        if (MAX_CHUNK_SIZE_PARAM.equals(chunkSize)) {
             for (RtdAction action : chunkRepository.keySet()) {
 //             todo: get action messages from lookup server instead of hardcode map
                 action.setActionMessageContent(actionMessages.get(action.getActionName()));
                 action.generateNewId();
 
-                writeRtdPardisRecord(action, chunkRepository.getRecords(action));
+                chunkRecordWriter(action, chunkRepository.getRecords(action));
             }
-            chunkRepository.clear();
+            afterChunkWriteAction();
         }
-
-//        Field messageField = eventRecord.addField("Message");
-//        messageField.setValue("greetingText");
-//        eventRecordService.write("OUT", eventRecord);
-
     }
 
 
     public String getFieldStringValue(String fieldName) {
+        nb_trace("in getFieldStringValue method", 1);
 
         try {
             logger.info("Extracting Field " + fieldName);
+            nb_trace("Extracting Field " + fieldName, 1);
+            nodeLogger.info("nodeLogger: Extracting Field " + fieldName);
+
             Field tmpField = currentRecord.getField(fieldName);
             String value = tmpField.getValue();
             logger.info(" Value " + value);
+            nb_trace(" Value " + value, 1);
+            nodeLogger.info("nodeLogger: Value " + value);
+
             return value;
         } catch (Exception ex) {
             logger.log(Level.FINE, "Cant parse" + fieldName);
+            nb_trace("Cant parse " + fieldName, 1);
+            nodeLogger.info("nodeLogger: Cant parse " + fieldName);
             return "";
         }
     }
 
     public Integer getFieldIntegerValue(String fieldName) {
+        nb_trace("in getFieldIntegerValue method", 1);
+        nodeLogger.info("nodeLogger: in getFieldIntegerValue method\"");
 
         try {
             logger.info("Extracting Field " + fieldName);
+            nb_trace("Extracting Field " + fieldName, 1);
+            nodeLogger.info("nodeLogger: Extracting Field " + fieldName);
+
             Field tmpField = currentRecord.getField(fieldName);
             Integer value = Integer.valueOf(tmpField.getValue());
             logger.info(" Value " + value);
+            nb_trace(" Value " + value, 1);
+            nodeLogger.info("nodeLogger: Value " + value);
+
             return value;
         } catch (Exception ex) {
             logger.log(Level.FINE, "Cant parse" + fieldName);
+            nb_trace("Cant parse " + fieldName, 1);
+            nodeLogger.info("nodeLogger: Cant parse " + fieldName);
+
             return 0;
         }
     }
 
     @Override
     public void flush() throws Exception {
+        nb_trace("in node flush method", 0);
+        nodeLogger.info("nodeLogger: node flush start");
+        nodeLogger.info("nodeLogger: node flush end");
 
     }
 
     @Override
     public void end() throws Exception {
+
+        nb_trace("node end method start", 0);
+        nodeLogger.info("nodeLogger: node 'end' start");
+
+        if (!chunkRepository.values().isEmpty()) {
+            nb_trace("creating last output records operation start", 1);
+            nodeLogger.info("nodeLogger: creating last output records operation start");
+
+        }
         for (RtdAction rtdAction : chunkRepository.keySet()) {
 //             todo: get action messages from lookup server instead of hardcode map
             rtdAction.setActionMessageContent(actionMessages.get(rtdAction.getActionName()));
             rtdAction.generateNewId();
 
-            writeRtdPardisRecord(rtdAction, chunkRepository.getRecords(rtdAction));
+            chunkRecordWriter(rtdAction, chunkRepository.getRecords(rtdAction));
         }
-        chunkRepository.clear();
+        afterChunkWriteAction();
     }
 
     @Override
     public void request(String s) throws Exception {
+        nb_trace("in node request method, input String: " + s, 0);
+        nodeLogger.info("nodeLogger: node request start, input String: " + s);
 
     }
 
     @Override
     public void pause(int i) throws Exception {
+        nb_trace("in node pause method, input int: " + i, 0);
+        nodeLogger.info("nodeLogger: pause method, input int: " + i);
 
     }
 
     @Override
     public void resume(int i) throws Exception {
+        nb_trace("in node resume method, input int: " + i, 0);
+        nodeLogger.info("nodeLogger: resume method, input int: " + i);
 
     }
 
     @Override
     public void setService(EventRecordService eventRecordService) {
+        nb_trace("in node setService method (EventRecordService will set here)", 0);
+        nodeLogger.info("nodeLogger: node setService method start");
+
         this.eventRecordService = eventRecordService;
     }
 
     @Override
     public void schedule() throws Exception {
+        nb_trace("in node schedule method", 0);
+        nodeLogger.info("nodeLogger: node schedule start");
 
     }
 
 
-    public void writeRtdPardisRecord(RtdAction action, List<Map.Entry<String, Integer>> chunkList) {
+    public void chunkRecordWriter(RtdAction action,RecordList chunkList) {
         EventRecord eventRecord = this.eventRecordService.newRecord();
+        nodeLogger.info("nodeLogger: chunk record writer method, action id: " + action.getActionName() +
+                ", chunk size: " + chunkList.size());
 
-        Field actionBlock = eventRecord.addField("Action");
-        actionBlock.addField("actionName", action.getActionName());
-        actionBlock.addField("messageContent", action.getActionMessageContent());
-        actionBlock.addField("requestId", action.getRequestId());
+        eventRecord.addField("record-generate-time", new Date().toString());
+        apiBodyBuilder(action,chunkList, eventRecord);
+        apiRequestBuilder(action.getRequestId(), eventRecord);
+        nodeLogger.info("nodeLogger: out record for action: " + action.getActionName() + ", record: " + eventRecord);
 
-        Field chunkListBlock = eventRecord.addField("ChunkList");
-        int i = 1;
-        for (Map.Entry<String, Integer> chunkPair : chunkList) {
-            chunkListBlock.addField("msisdn_" + i, chunkPair.getKey());
-            chunkListBlock.addField("retryCount_" + i, String.valueOf(chunkPair.getValue() + 1));
-            i++;
-        }
         this.eventRecordService.write("OUT", eventRecord);
     }
 
     @Override
-    public void timer() throws Exception {
-        for (RtdAction rtdAction : chunkRepository.keySet()) {
-//             todo: get action messages from lookup server instead of hardcode map
-            rtdAction.setActionMessageContent(actionMessages.get(rtdAction.getActionName()));
-            rtdAction.generateNewId();
+    public void timer() {
+        if (!chunkRepository.isEmpty()) {
+            nb_trace("no input file processing, timer method start", 0);
+            nodeLogger.info("nodeLogger: no input file processing, timer method start");
 
-            writeRtdPardisRecord(rtdAction, chunkRepository.getRecords(rtdAction));
+
+            for (RtdAction rtdAction : chunkRepository.keySet()) {
+                nb_trace("create remain output records while waiting for new input file", 1);
+                nodeLogger.info("nodeLogger: node init start");
+
+//             todo: get action messages from lookup server instead of hardcode map
+                rtdAction.setActionMessageContent(actionMessages.get(rtdAction.getActionName()));
+                rtdAction.generateNewId();
+
+                chunkRecordWriter(rtdAction, chunkRepository.getRecords(rtdAction));
+            }
+            afterChunkWriteAction();
         }
+    }
+
+    public void apiBodyBuilder(RtdAction action, RecordList msisdnList, EventRecord eventRecord) {
+        StringBuilder pardisJsonBody = new StringBuilder();
+        nodeLogger.info("nodeLogger: api body builder method start");
+
+        pardisJsonBody.append("{\"destinationList\" : ").append(msisdnList.getkeySetString()).append(",")
+                .append("\"message\": \"").append(action.getActionMessageContent()).append("\"").append(",")
+                .append("\"smsClass\": \"").append("NORMAL").append("\"").append(",")
+                .append("\"source\": \"").append(SOURCE_NUM_PARAM).append("\"").append("}");
+
+        eventRecord.addField("Body", pardisJsonBody.toString());
+        nodeLogger.info("nodeLogger: api body builder: event record body: " + pardisJsonBody.toString());
+
+        eventRecord.addField("ChunkInfo", "[" + action.getActionName() + "]" + msisdnList.getKeyValueListString());
+        nodeLogger.info("nodeLogger: request values: " + eventRecord.getField("RequestValues"));
+    }
+
+    public void apiRequestBuilder(String requestId, EventRecord eventRecord) {
+        nodeLogger.info("nodeLogger: api request builder method");
+
+        eventRecord.addField("Method", "POST");
+        eventRecord.addField("Request", "true");
+        eventRecord.addField("Request-Uri", REQUEST_URI);
+        eventRecord.addField("Request-Id", requestId);
+        eventRecord.addField("Remote-Scheme", REMOTE_SCHEME);
+        eventRecord.addField("Remote-Address", REMOTE_ADDRESS);
+        eventRecord.addField("Remote-Port", REMOTE_PORT);
+        eventRecord.addField("Header-Authorization", getToken());
+        eventRecord.addField("MMMHeader-User-Agent", "curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2");
+        eventRecord.addField("Header-Content-Type", "application/json; charset=UTF-8");
+        eventRecord.addField("Header-Accept", "application/json");
+        eventRecord.addField("Header-Host", HEADER_HOST);
+    }
+
+    public String getToken() {
+        return "Bearer" + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+                "eyJ1c2VybmFtZSI6ImNhdGNyeSIsImV4cCI6MTcyMjM0OTUxM30.UcOOkd4KK562bhrgycNukpsT-qLSV1i8WgYYrPNRNs0";
+    }
+
+    public void afterChunkWriteAction() {
         chunkRepository.clear();
+        try {
+            nodeLogger.info("nodeLogger: node sleep for 50 ms");
+            Thread.sleep(chunker_writer_sleep_time);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
