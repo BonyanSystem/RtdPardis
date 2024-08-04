@@ -17,8 +17,7 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
 {
 
     private static final Logger logger = Logger.getLogger(PardisBLN.class.getName());
-    private static final TxeLogger nodeLogger =
-            NodeLoggerFactory.getNodeLogger(PardisBLN.class.getCanonicalName());
+    private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisBLN.class.getCanonicalName());
     public NodeContext nodeContext;
     private EventRecord currentRecord;
     private EventRecordService eventRecordService;
@@ -32,17 +31,6 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
     private String REMOTE_PORT;
     private String HEADER_HOST;
     private int chunker_writer_sleep_time;
-
-//    private LookupService lookupService;
-//    private String lookupServer;
-//    private String actionTableName;
-//    private LookupTable actionTable;
-
-    private String timesTenUser;
-    private String timesTenPassword;
-    private String timesTenDatasource;
-    private String timesTenDriver;
-
     private HashMap<String, String> actionMessages;
 
 
@@ -70,26 +58,6 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
             nb_trace("action messages map initialized", 0);
             nodeLogger.info("action messages map initialized");
 
-//            timesTenUser = nodeContext.getParameter("timesTenUser");
-//            timesTenUser = "user";
-//            timesTenPassword = nodeContext.getParameter("timesTenPassword");
-//            timesTenPassword = "";
-//            timesTenDatasource = nodeContext.getParameter("timesTenDatasource");
-//            timesTenDatasource = "jdbc:timesten:ccFdcDS";
-//            timesTenDriver = nodeContext.getParameter("timesTenDriver");
-//            timesTenDriver = "com.timesten.jdbc.TimesTenDriver";
-//
-//            lookupServer = nodeContext.getParameter("lookupServer");
-//            actionTableName = nodeContext.getParameter("actionTableName");
-//
-//            DataSource dataSource = DataSourceFactory.getInstance().getDataSource(
-//                    timesTenUser, timesTenPassword, timesTenDatasource, timesTenDriver);
-
-//            Connection connection = dataSource.getConnection();
-//            String s = connection.nativeSQL("SELECT 1 FROM EL_ACCESS_TOKENS");
-//            nodeLogger.info("nodeLogger_info__connection.nativeSQL: %s", s);
-//            nodeLogger.debug("nodeLogger_debug__connection.nativeSQL: %s", s);
-//            nb_diag(99, "connection.nativeSQL" + s);
             this.nodeContext = nodeContext;
             this.MAX_CHUNK_SIZE_PARAM = nodeContext.getParameterInt("chunker-max-size");
             this.chunker_writer_sleep_time = nodeContext.getParameterInt("chunker-writer-sleep-time");
@@ -127,13 +95,12 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
         nodeLogger.info("nodeLogger: Processing Input record");
         nodeLogger.info("nodeLogger: Input record: " + eventRecord);
 
+        eventRecord.getOriginalFilename();
         logger.info("Processing record");
         currentRecord = eventRecord;
         int chunkSize;
         RtdAction rtdAction = new RtdAction(getFieldStringValue("actionid"));
-        Map.Entry<String, Integer> msisdnPair = new AbstractMap.SimpleEntry<>(
-                this.getFieldStringValue("msisdn"),
-                this.getFieldIntegerValue("count"));
+        Map.Entry<String, Integer> msisdnPair = new AbstractMap.SimpleEntry<>(this.getFieldStringValue("msisdn"), this.getFieldIntegerValue("count"));
         chunkSize = chunkRepository.addRecord(rtdAction, msisdnPair);
         //else throw error invalid record
         if (MAX_CHUNK_SIZE_PARAM.equals(chunkSize)) {
@@ -201,29 +168,13 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
     public void flush() throws Exception {
         nb_trace("in node flush method", 0);
         nodeLogger.info("nodeLogger: node flush start");
-        nodeLogger.info("nodeLogger: node flush end");
-
     }
 
     @Override
     public void end() throws Exception {
-
         nb_trace("node end method start", 0);
         nodeLogger.info("nodeLogger: node 'end' start");
 
-        if (!chunkRepository.values().isEmpty()) {
-            nb_trace("creating last output records operation start", 1);
-            nodeLogger.info("nodeLogger: creating last output records operation start");
-
-        }
-        for (RtdAction rtdAction : chunkRepository.keySet()) {
-//             todo: get action messages from lookup server instead of hardcode map
-            rtdAction.setActionMessageContent(actionMessages.get(rtdAction.getActionName()));
-            rtdAction.generateNewId();
-
-            chunkRecordWriter(rtdAction, chunkRepository.getRecords(rtdAction));
-        }
-        afterChunkWriteAction();
     }
 
     @Override
@@ -263,13 +214,12 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
     }
 
 
-    public void chunkRecordWriter(RtdAction action,RecordList chunkList) {
+    public void chunkRecordWriter(RtdAction action, RecordList chunkList) {
         EventRecord eventRecord = this.eventRecordService.newRecord();
-        nodeLogger.info("nodeLogger: chunk record writer method, action id: " + action.getActionName() +
-                ", chunk size: " + chunkList.size());
+        nodeLogger.info("nodeLogger: chunk record writer method, action id: " + action.getActionName() + ", chunk size: " + chunkList.size());
 
         eventRecord.addField("record-generate-time", new Date().toString());
-        apiBodyBuilder(action,chunkList, eventRecord);
+        apiBodyBuilder(action, chunkList, eventRecord);
         apiRequestBuilder(action.getRequestId(), eventRecord);
         nodeLogger.info("nodeLogger: out record for action: " + action.getActionName() + ", record: " + eventRecord);
 
@@ -278,38 +228,18 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
 
     @Override
     public void timer() {
-        if (!chunkRepository.isEmpty()) {
-            nb_trace("no input file processing, timer method start", 0);
-            nodeLogger.info("nodeLogger: no input file processing, timer method start");
-
-
-            for (RtdAction rtdAction : chunkRepository.keySet()) {
-                nb_trace("create remain output records while waiting for new input file", 1);
-                nodeLogger.info("nodeLogger: node init start");
-
-//             todo: get action messages from lookup server instead of hardcode map
-                rtdAction.setActionMessageContent(actionMessages.get(rtdAction.getActionName()));
-                rtdAction.generateNewId();
-
-                chunkRecordWriter(rtdAction, chunkRepository.getRecords(rtdAction));
-            }
-            afterChunkWriteAction();
-        }
     }
 
     public void apiBodyBuilder(RtdAction action, RecordList msisdnList, EventRecord eventRecord) {
         StringBuilder pardisJsonBody = new StringBuilder();
         nodeLogger.info("nodeLogger: api body builder method start");
 
-        pardisJsonBody.append("{\"destinationList\" : ").append(msisdnList.getkeySetString()).append(",")
-                .append("\"message\": \"").append(action.getActionMessageContent()).append("\"").append(",")
-                .append("\"smsClass\": \"").append("NORMAL").append("\"").append(",")
-                .append("\"source\": \"").append(SOURCE_NUM_PARAM).append("\"").append("}");
+        pardisJsonBody.append("{\"destinationList\" : ").append(msisdnList.getkeySetString()).append(",").append("\"message\": \"").append(action.getActionMessageContent()).append("\"").append(",").append("\"smsClass\": \"").append("NORMAL").append("\"").append(",").append("\"source\": \"").append(SOURCE_NUM_PARAM).append("\"").append("}");
 
         eventRecord.addField("Body", pardisJsonBody.toString());
         nodeLogger.info("nodeLogger: api body builder: event record body: " + pardisJsonBody.toString());
 
-        eventRecord.addField("ChunkInfo", "[" + action.getActionName() + "]" + msisdnList.getKeyValueListString());
+        eventRecord.addField("Request-Id", "[" + action.getActionName() + "]" + msisdnList.getKeyValueListString());
         nodeLogger.info("nodeLogger: request values: " + eventRecord.getField("RequestValues"));
     }
 
@@ -319,7 +249,7 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
         eventRecord.addField("Method", "POST");
         eventRecord.addField("Request", "true");
         eventRecord.addField("Request-Uri", REQUEST_URI);
-        eventRecord.addField("Request-Id", requestId);
+//        eventRecord.addField("Request-Id", requestId);
         eventRecord.addField("Remote-Scheme", REMOTE_SCHEME);
         eventRecord.addField("Remote-Address", REMOTE_ADDRESS);
         eventRecord.addField("Remote-Port", REMOTE_PORT);
@@ -331,8 +261,7 @@ public class PardisBLN extends Nodebase implements BusinessLogic, Schedulable, T
     }
 
     public String getToken() {
-        return "Bearer" + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
-                "eyJ1c2VybmFtZSI6ImNhdGNyeSIsImV4cCI6MTcyMjM0OTUxM30.UcOOkd4KK562bhrgycNukpsT-qLSV1i8WgYYrPNRNs0";
+        return "Bearer " + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNhdGNyeSIsImV4cCI6MTcyODQzNzMxOH0.PZmvrcM238NtuWeKsTauA5VrJsxDGRMGnEUeQZL1YyI";
     }
 
     public void afterChunkWriteAction() {
