@@ -9,9 +9,7 @@ public class Chunk<T> {
     private boolean touched;
 
 
-
     public int addRecord(Map.Entry<String, Integer> msisdn) {
-        RecordList records = this.records;
         records.add(msisdn);
         setTouched(true);
         return records.size();

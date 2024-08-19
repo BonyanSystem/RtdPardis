@@ -8,7 +8,7 @@ public class RecordList extends ArrayList<Map.Entry<String, Integer>> {
 
     public String getkeySetString() {
         StringBuilder keySetString = new StringBuilder("[");
-        for (Map.Entry<String, Integer> entry: this) {
+        for (Map.Entry<String, Integer> entry : this) {
             keySetString.append("{\"mobileNo\": \"").append(entry.getKey()).append("\"},");
         }
         keySetString.deleteCharAt(keySetString.lastIndexOf(","));
@@ -18,7 +18,7 @@ public class RecordList extends ArrayList<Map.Entry<String, Integer>> {
 
     public String getKeyValueListString() {
         StringBuilder keySetString = new StringBuilder("{");
-        for (Map.Entry<String, Integer> entry: this) {
+        for (Map.Entry<String, Integer> entry : this) {
             keySetString.append("(")
                     .append(entry.getKey()).append(",")
                     .append(entry.getValue()).append(")|");

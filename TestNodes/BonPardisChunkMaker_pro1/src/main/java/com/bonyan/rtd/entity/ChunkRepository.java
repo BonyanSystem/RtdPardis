@@ -1,6 +1,9 @@
 package com.bonyan.rtd.entity;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
 
@@ -20,9 +23,9 @@ public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
         this.put(actionName, chunk);
     }
 
-    public Set<Chunk<T>> getUntouchedChunk(){
+    public Set<Chunk<T>> getUntouchedChunk() {
         Set<Chunk<T>> untouchedChunk = new HashSet<>();
-        for (Chunk<T> chunk: this.values()) {
+        for (Chunk<T> chunk : this.values()) {
             if (!chunk.isTouched()) {
                 untouchedChunk.add(chunk);
             }
@@ -30,8 +33,8 @@ public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
         return untouchedChunk;
     }
 
-    public void clearTouched(){
-        for(Chunk<T> chunk: this.values()) {
+    public void resetTouched() {
+        for (Chunk<T> chunk : this.values()) {
             chunk.setTouched(false);
         }
     }
