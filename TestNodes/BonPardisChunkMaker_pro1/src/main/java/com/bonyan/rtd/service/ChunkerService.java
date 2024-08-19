@@ -36,12 +36,13 @@ public class ChunkerService {
         EventRecord eventRecord = this.eventRecordService.newRecord();
 
         eventRecord.addField("record_generate_time", new Date().toString());
-        makeChunkRecord(chunkRepository.get(actionName).getRtdAction(), chunkList, eventRecord);
+        Chunk<String> chunk = chunkRepository.get(actionName);
+        makeChunkRecord(chunk.getRtdAction(), chunkList, eventRecord);
 
         chunkWriter.writeRecord(eventRecord);
     }
 
-    public void makeChunkRecord(RtdAction action, RecordList msisdnList, EventRecord eventRecord) {
+    public void makeChunkRecord(RtdAction<String> action, RecordList msisdnList, EventRecord eventRecord) {
         Field actionBlock = eventRecord.addField("Action");
         actionBlock.addField("action_id", action.getActionName());
         actionBlock.addField("request_id", action.getRequestId());
@@ -63,12 +64,12 @@ public class ChunkerService {
         removeUsedChunk(null);
     }
 
-    public void makeAndWriteChunkRecord(RtdAction action) {
+    public void makeAndWriteChunkRecord(RtdAction<String> action) {
         makeOutput(action.getActionName(), chunkRepository.get(action.getActionName()).getRecords());
         removeUsedChunk(action);
     }
 
-    public void removeUsedChunk(RtdAction action) {
+    public void removeUsedChunk(RtdAction<String> action) {
         if (action != null) {
             chunkRepository.remove(action.getActionName());
         } else {
@@ -85,7 +86,7 @@ public class ChunkerService {
         if (retryCount < nodeParameters.getMaxSendRetryCount()) {
             String msisdn = NodeRecordUtil.getFieldStringValue(eventRecord, "msisdn");
 
-            RtdAction rtdAction = new RtdAction(NodeRecordUtil.getFieldStringValue(eventRecord, "actionid"));
+            RtdAction<String> rtdAction = new RtdAction<>(NodeRecordUtil.getFieldStringValue(eventRecord, "actionid"));
             Map.Entry<String, Integer> msisdnPair = new AbstractMap.SimpleEntry<>(msisdn, retryCount);
             int chunkSize = chunkRepository.addRecord(rtdAction, msisdnPair);
 

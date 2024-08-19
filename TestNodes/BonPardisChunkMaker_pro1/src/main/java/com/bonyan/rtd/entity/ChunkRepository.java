@@ -8,7 +8,7 @@ import java.util.Set;
 public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
 
 
-    public int addRecord(RtdAction rtdAction, Map.Entry<String, Integer> msisdn) {
+    public int addRecord(RtdAction<String> rtdAction, Map.Entry<String, Integer> msisdn) {
         return this.get(rtdAction.getActionName()).addRecord(msisdn);
     }
 
@@ -19,7 +19,7 @@ public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
     }
 
     public void addChunk(T actionName) {
-        Chunk<T> chunk = new Chunk<>();
+        Chunk<T> chunk = new Chunk<>(actionName);
         this.put(actionName, chunk);
     }
 

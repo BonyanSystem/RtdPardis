@@ -4,10 +4,14 @@ import java.util.Map;
 
 public class Chunk<T> {
     private T actionName;
-    private RtdAction rtdAction;
-    private RecordList records;
+    private RtdAction<T> rtdAction;
+    private RecordList records = new RecordList();
     private boolean touched;
 
+    public Chunk(T actionName) {
+        this.rtdAction = new RtdAction<>(actionName);
+        this.actionName = actionName;
+    }
 
     public int addRecord(Map.Entry<String, Integer> msisdn) {
         records.add(msisdn);
@@ -24,11 +28,11 @@ public class Chunk<T> {
         this.actionName = actionName;
     }
 
-    public RtdAction getRtdAction() {
+    public RtdAction<T> getRtdAction() {
         return rtdAction;
     }
 
-    public void setRtdAction(RtdAction rtdAction) {
+    public void setRtdAction(RtdAction<T> rtdAction) {
         this.rtdAction = rtdAction;
     }
 

@@ -4,16 +4,16 @@ package com.bonyan.rtd.entity;
 import java.util.Objects;
 import java.util.UUID;
 
-public class RtdAction {
+public class RtdAction<T> {
     private String requestId;
-    private String actionName;
+    private T actionName;
     private String actionMessageContent;
 
 
     public RtdAction() {
     }
 
-    public RtdAction(String actionName) {
+    public RtdAction(T actionName) {
         generateNewId();
         this.actionName = actionName;
     }
@@ -26,11 +26,11 @@ public class RtdAction {
         this.requestId = UUID.randomUUID().toString();
     }
 
-    public String getActionName() {
+    public T getActionName() {
         return actionName;
     }
 
-    public void setActionName(String actionName) {
+    public void setActionName(T actionName) {
         this.actionName = actionName;
     }
 
@@ -46,7 +46,7 @@ public class RtdAction {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RtdAction rtdAction = (RtdAction) o;
+        RtdAction<T> rtdAction = (RtdAction<T>) o;
         return Objects.equals(actionName, rtdAction.actionName);
     }
 

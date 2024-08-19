@@ -14,6 +14,7 @@ public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Sch
     private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisChunkMakerNode.class.getCanonicalName());
     private NodeContext nodeContext;
     private ChunkerService chunkerService;
+    private EventRecordService eventRecordService;
     private PardisChunkMakerNode.NodeParameters nodeParams;
 
     @Override
@@ -23,6 +24,7 @@ public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Sch
 
             this.nodeContext = nodeContext;
             loadNodeParameters();
+            this.chunkerService = new ChunkerService(eventRecordService, nodeParams);
 
             nodeLogger.info("nodeLogger: node init end");
         } catch (Exception ex) {
@@ -75,7 +77,7 @@ public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Sch
     @Override
     public void setService(EventRecordService eventRecordService) {
         nodeLogger.info("nodeLogger: node setService method start");
-        this.chunkerService = new ChunkerService(eventRecordService, nodeParams);
+        this.eventRecordService = eventRecordService;
     }
 
     @Override
