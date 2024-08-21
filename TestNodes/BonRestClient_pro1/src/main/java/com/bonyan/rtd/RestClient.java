@@ -79,7 +79,6 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
         logger.debug("init: org.eclipse.jetty.util.log.class = " + System.getProperty("org.eclipse.jetty.util.log.class"));
         System.setProperty("org.eclipse.jetty.LEVEL", this.jettyDiagnosticLevel);
         logger.debug("init: org.eclipse.jetty.LEVEL = " + System.getProperty("org.eclipse.jetty.LEVEL"));
-
     }
 
     @Override
