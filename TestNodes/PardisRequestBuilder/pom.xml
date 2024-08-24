@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.bonyan</groupId>
-    <artifactId>PardisRequestMaker</artifactId>
+    <artifactId>PardisRequestBuilder</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

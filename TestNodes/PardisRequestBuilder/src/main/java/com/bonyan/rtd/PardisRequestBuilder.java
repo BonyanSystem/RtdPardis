@@ -2,22 +2,15 @@ package com.bonyan.rtd;
 
 import com.comptel.eventlink.core.Nodebase;
 import com.comptel.mc.node.*;
-import com.comptel.mc.node.logging.NodeLoggerFactory;
-import com.comptel.mc.node.logging.TxeLogger;
 import com.comptel.mc.node.lookup.LookupService;
 import com.comptel.mc.node.lookup.LookupServiceUser;
 
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-public class PardisRequestMaker extends Nodebase implements BusinessLogic, Schedulable, TimerObserver, LookupServiceUser {
+public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Schedulable, TimerObserver, LookupServiceUser {
 
 
-    private LookupService lookupService;
     @Override
     public void setLookupService(LookupService service) {
-            lookupService = service;
+
     }
 
     @Override
