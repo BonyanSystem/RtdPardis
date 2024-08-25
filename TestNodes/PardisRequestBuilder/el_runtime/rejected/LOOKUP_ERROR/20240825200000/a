@@ -1,0 +1,171 @@
+RECORD
+#input_id 1721052846x005_00150
+#output_id 
+#input_type 
+#output_type 
+#addkey 
+#source_id RTD1_ACTIONS
+#filename test.OUT.collected
+F record_generate_time Mon Aug 19 18:13:45 IRDT 2024
+F chunk_id 5c0badc9-d96a-40a4-ad25-d63c2c4aaf90
+B Action
+F action_id general_loan_content8
+.
+B ChunkList
+B Sub_1
+F msisdn 989932761001
+F retry_count 0
+.
+B Sub_2
+F msisdn 989932761065
+F retry_count 0
+.
+B Sub_3
+F msisdn 989932761070
+F retry_count 0
+.
+B Sub_4
+F msisdn 989932761075
+F retry_count 0
+.
+B Sub_5
+F msisdn 989932761080
+F retry_count 0
+.
+B Sub_6
+F msisdn 989932761082
+F retry_count 0
+.
+B Sub_7
+F msisdn 989932761084
+F retry_count 0
+.
+B Sub_8
+F msisdn 989932761086
+F retry_count 0
+.
+B Sub_9
+F msisdn 989932761006
+F retry_count 0
+.
+B Sub_10
+F msisdn 989932761008
+F retry_count 0
+.
+.
+F REJECTED Lookup table record not found.
+.
+RECORD
+#input_id 1721052846x005_00150
+#output_id 
+#input_type 
+#output_type 
+#addkey 
+#source_id RTD1_ACTIONS
+#filename test.OUT.collected
+F record_generate_time Mon Aug 19 18:13:45 IRDT 2024
+F chunk_id 293b4e85-6fe6-44be-aec0-a8a23fb63c5a
+B Action
+F action_id general_loan_content8
+.
+B ChunkList
+B Sub_1
+F msisdn 989932761010
+F retry_count 0
+.
+B Sub_2
+F msisdn 989932761012
+F retry_count 0
+.
+B Sub_3
+F msisdn 989932761014
+F retry_count 0
+.
+B Sub_4
+F msisdn 989932761016
+F retry_count 0
+.
+B Sub_5
+F msisdn 989932761018
+F retry_count 0
+.
+B Sub_6
+F msisdn 989932761020
+F retry_count 0
+.
+B Sub_7
+F msisdn 989932761022
+F retry_count 0
+.
+B Sub_8
+F msisdn 989932761024
+F retry_count 0
+.
+B Sub_9
+F msisdn 989932761026
+F retry_count 0
+.
+B Sub_10
+F msisdn 989932761028
+F retry_count 0
+.
+.
+F REJECTED Lookup table record not found.
+.
+RECORD
+#input_id 1721052846x005_00150
+#output_id 
+#input_type 
+#output_type 
+#addkey 
+#source_id RTD1_ACTIONS
+#filename test.OUT.collected
+F record_generate_time Mon Aug 19 18:13:45 IRDT 2024
+F chunk_id 0f6ba44f-961c-4ef7-8617-bf1e73719856
+B Action
+F action_id general_loan_content8
+.
+B ChunkList
+B Sub_1
+F msisdn 989932761030
+F retry_count 0
+.
+B Sub_2
+F msisdn 989932761032
+F retry_count 0
+.
+B Sub_3
+F msisdn 989932761034
+F retry_count 0
+.
+B Sub_4
+F msisdn 989932761036
+F retry_count 0
+.
+B Sub_5
+F msisdn 989932761038
+F retry_count 0
+.
+B Sub_6
+F msisdn 989932761040
+F retry_count 0
+.
+B Sub_7
+F msisdn 989932761042
+F retry_count 0
+.
+B Sub_8
+F msisdn 989932761044
+F retry_count 0
+.
+B Sub_9
+F msisdn 989932761046
+F retry_count 0
+.
+B Sub_10
+F msisdn 989932761048
+F retry_count 0
+.
+.
+F REJECTED Lookup table record not found.
+.

@@ -68,13 +68,23 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
         Field actionBlock = eventRecord.getField("Action");
         Field action_id_field = actionBlock.getField("action_id");
         String action_id = action_id_field.getValue();
-        List<NormalLookupResultItem> result = contentTable.lookup(3,2,1,action_id,"Pardis");
-        String content_id = result.get(0).getReturnValues().get(2);
 
-        newOutputRecord = this.erService.newRecord();
-        newOutputRecord.addField("content_id",content_id);
-        erService.write("OUT",newOutputRecord);
+        try {
+            List<NormalLookupResultItem> result = contentTable.lookup(3,2,1,action_id,"Pardis");
 
+            if (result == null || result.isEmpty()) {
+                throw new RuntimeException("Record not found in the lookup table: " + contentTable.getName());
+
+            }
+            String content_id = result.get(0).getReturnValues().get(2);
+            newOutputRecord = this.erService.newRecord();
+            newOutputRecord.addField("content_id",content_id);
+            erService.write("OUT",newOutputRecord);
+
+        } catch (RuntimeException e) {
+            nodeLogger.error("Record not found in the lookup table: " + contentTable.getName());
+            eventRecord.reject("LOOKUP_ERROR","Lookup table record not found.");
+        }
 
     }
 
