@@ -53,8 +53,12 @@ F msisdn 989932761007
 F retry_count 0
 .
 .
-F content_id Hello
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761000"}, {"mobileNo": "989932761064"}, {"mobileNo": "989932761069"}, {"mobileNo": "989932761074"}, {"mobileNo": "989932761079"}, {"mobileNo": "989932761081"}, {"mobileNo": "989932761083"}, {"mobileNo": "989932761085"}, {"mobileNo": "989932761005"}, {"mobileNo": "989932761007"}], "message": "Hello", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -111,8 +115,12 @@ F msisdn 989932761008
 F retry_count 0
 .
 .
-F content_id 
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761001"}, {"mobileNo": "989932761065"}, {"mobileNo": "989932761070"}, {"mobileNo": "989932761075"}, {"mobileNo": "989932761080"}, {"mobileNo": "989932761082"}, {"mobileNo": "989932761084"}, {"mobileNo": "989932761086"}, {"mobileNo": "989932761006"}, {"mobileNo": "989932761008"}], "message": "", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -169,8 +177,12 @@ F msisdn 989932761027
 F retry_count 0
 .
 .
-F content_id Hello
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761009"}, {"mobileNo": "989932761011"}, {"mobileNo": "989932761013"}, {"mobileNo": "989932761015"}, {"mobileNo": "989932761017"}, {"mobileNo": "989932761019"}, {"mobileNo": "989932761021"}, {"mobileNo": "989932761023"}, {"mobileNo": "989932761025"}, {"mobileNo": "989932761027"}], "message": "Hello", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -227,8 +239,12 @@ F msisdn 989932761028
 F retry_count 0
 .
 .
-F content_id 
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761010"}, {"mobileNo": "989932761012"}, {"mobileNo": "989932761014"}, {"mobileNo": "989932761016"}, {"mobileNo": "989932761018"}, {"mobileNo": "989932761020"}, {"mobileNo": "989932761022"}, {"mobileNo": "989932761024"}, {"mobileNo": "989932761026"}, {"mobileNo": "989932761028"}], "message": "", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -265,8 +281,12 @@ F msisdn 989932761078
 F retry_count 0
 .
 .
-F content_id Hello
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761002"}, {"mobileNo": "989932761063"}, {"mobileNo": "989932761068"}, {"mobileNo": "989932761073"}, {"mobileNo": "989932761078"}], "message": "Hello", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -303,8 +323,12 @@ F msisdn 989932761077
 F retry_count 0
 .
 .
-F content_id Hello
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761003"}, {"mobileNo": "989932761062"}, {"mobileNo": "989932761067"}, {"mobileNo": "989932761072"}, {"mobileNo": "989932761077"}], "message": "Hello", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -341,8 +365,12 @@ F msisdn 989932761076
 F retry_count 0
 .
 .
-F content_id Hello
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761004"}, {"mobileNo": "989932761061"}, {"mobileNo": "989932761066"}, {"mobileNo": "989932761071"}, {"mobileNo": "989932761076"}], "message": "Hello", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -399,8 +427,12 @@ F msisdn 989932761047
 F retry_count 0
 .
 .
-F content_id Hello
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761029"}, {"mobileNo": "989932761031"}, {"mobileNo": "989932761033"}, {"mobileNo": "989932761035"}, {"mobileNo": "989932761037"}, {"mobileNo": "989932761039"}, {"mobileNo": "989932761041"}, {"mobileNo": "989932761043"}, {"mobileNo": "989932761045"}, {"mobileNo": "989932761047"}], "message": "Hello", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .
 RECORD
 #input_id 1721052846x005_00150
@@ -457,6 +489,10 @@ F msisdn 989932761048
 F retry_count 0
 .
 .
-F content_id 
+F Method POST
+F request true
 F Body {"destinationList": [{"mobileNo": "989932761030"}, {"mobileNo": "989932761032"}, {"mobileNo": "989932761034"}, {"mobileNo": "989932761036"}, {"mobileNo": "989932761038"}, {"mobileNo": "989932761040"}, {"mobileNo": "989932761042"}, {"mobileNo": "989932761044"}, {"mobileNo": "989932761046"}, {"mobileNo": "989932761048"}], "message": "", "smsClass": "NORMAL", "source": "988082"}
+F MMMHeader-User-Agent curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2
+F Header-Content-Type application/json; charset=UTF-8
+F Header-Accept application/json
 .

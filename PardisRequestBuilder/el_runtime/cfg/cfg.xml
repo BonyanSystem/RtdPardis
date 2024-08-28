@@ -154,6 +154,9 @@
         <storage name="LOOKUP_ERROR">
             <description>Storage for Lookup Errors</description>
         </storage>
+        <storage name="WRITE_ERROR">
+            <description>Building/Writing Record failed</description>
+        </storage>
     </storages>
     <links>
         <link>OUT</link>

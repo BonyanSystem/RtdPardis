@@ -24,6 +24,7 @@ DiagnosticLevel         "0,0,0"
 InDataPath              "IN,file:/comptel/elink/catcry/PardisRequestBuilder/in"
 OutDataPath             "OUT,file:/comptel/elink/catcry/PardisRequestBuilder/out/OUT"
 RejectedDataPath             "LOOKUP_ERROR:/comptel/elink/catcry/PardisRequestBuilder/rejected/LOOKUP_ERROR"
+RejectedDataPath             "WRITE_ERROR:/comptel/elink/catcry/PardisRequestBuilder/rejected/WRITE_ERROR"
 
 ApplicationClass "com.bonyan.rtd.PardisRequestBuilder"
 InitialJavaHeapSize "128M"

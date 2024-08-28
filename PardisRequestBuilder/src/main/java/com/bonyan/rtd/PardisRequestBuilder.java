@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import com.bonyan.rtd.services.LookupServiceHandler;
 import com.bonyan.rtd.dto.BodyDto;
+import com.bonyan.rtd.services.RequestWriter;
 
 public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Schedulable, TimerObserver, LookupServiceUser {
 
@@ -113,8 +114,6 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
         bodyDto.setSmsClass(smsClassName);
         bodyDto.setSource(smsSource);
 
-
-
         // --------------------------    SMS Content Lookup    --------------------------------------
         smsContent = lookupServiceHandler.doLookup(action_id, channel);
         if (smsContent.isEmpty()) {
@@ -123,8 +122,6 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
         }
         bodyDto.setMessage(smsContent);
 
-
-
         // ---------------------------        Build Body     ------------------------------------------
         RequestBodyBuilder requestBody;
         requestBody = new RequestBodyBuilder();
@@ -132,11 +129,17 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
 
 
         // ------------------------     Build and Write Request Record    ------------------------------
-        //newOutputRecord = this.erService.newRecord();
+
+        RequestWriter agent = new RequestWriter(erService,eventRecord,requestBodyString);
+        agent.writeOutRecord();
+
+        /*
         newOutputRecord= (EventRecord) eventRecord.copy();
         newOutputRecord.addField("content_id",smsContent);
         newOutputRecord.addField("Body",requestBodyString);
         erService.write("OUT",newOutputRecord);
+         */
+
     }
 
     @Override
