@@ -13,7 +13,6 @@ public class RequestWriter extends Nodebase {
     public EventRecordService erService;
     public EventRecord inputRecord;
     public String requestBody;
-    public  EventRecord outputRecord;
     public  EventRecord outRecord;
     public RequestWriter(EventRecordService erService,EventRecord inputEventRecord,String requestBody) {
         this.erService = erService;
@@ -31,18 +30,16 @@ public class RequestWriter extends Nodebase {
         this.outRecord.addField("Header-Accept", "application/json");
     }
 
-    public boolean writeOutRecord() throws Exception{
+    public void writeOutRecord(){
         try{
             buildOutRecord();
             erService.write("OUT", this.outRecord);
 
             //erService.write(outputRecord);
-            return true;
         }
         catch (RuntimeException e) {
             nodeLogger.error("Error in building/writing output record: ");
-            this.inputRecord.reject("WRITE_ERROR","Building/Writing record failed. Error: "+ e);
-            return false;
+            this.inputRecord.reject("WRITE_ERROR","Building/Writing record failed. Error: "+ e.getMessage());
         }
     }
 

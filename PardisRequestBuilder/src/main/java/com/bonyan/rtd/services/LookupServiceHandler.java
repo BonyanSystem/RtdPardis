@@ -26,16 +26,24 @@ public class LookupServiceHandler {
     }
 
 
-    public String doLookup(String action_id, String channel) throws Exception{
+    public String doLookup(String action_id, String channel, String smsLanguage) throws Exception{
         String messageContent="";
         try {
             List<NormalLookupResultItem> result = contentTable.lookup(3, 2, 1, action_id, channel);
-
+            // int1 : return type columns returned per row
+            // int2 : key type columns returned per row
+            // int3 : max matching rows that should be returned
             if (result == null || result.isEmpty()) {
                 throw new RuntimeException("Record not found in the lookup table: " + contentTable.getName());
-
             }
-            messageContent = result.get(0).getReturnValues().get(0);
+
+            if (smsLanguage.equals("English")) {
+                messageContent = result.get(0).getReturnValues().get(0);
+            }
+            else {
+                messageContent = result.get(0).getReturnValues().get(1);
+            }
+
 
         } catch (RuntimeException e) {
             messageContent = "";

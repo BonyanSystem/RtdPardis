@@ -105,6 +105,22 @@
                 <installation_specific>false</installation_specific>
             </attributes>
         </parameter>
+        <parameter name="SMS_Language">
+            <value>Persian</value>
+            <description>Pardis SMS content Language</description>
+            <value_type>
+                <list>
+                    <element>Persian</element>
+                    <element>English</element>
+                </list>
+            </value_type>
+            <attributes>
+                <mandatory>true</mandatory>
+                <hidden>false</hidden>
+                <environment>false</environment>
+                <installation_specific>false</installation_specific>
+            </attributes>
+        </parameter>
         <parameter name="MaxJavaHeapSize">
             <value>128M</value>
             <description>Defines the maximum size of java heap memory.

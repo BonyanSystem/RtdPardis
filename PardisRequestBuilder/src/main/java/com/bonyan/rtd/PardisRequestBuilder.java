@@ -32,6 +32,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
     private String smsSource;
     public String requestBodyString;
     public String smsContent;
+    public String smsLanguage;
 
 
 
@@ -50,6 +51,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
         smsClassName = nodeContext.getParameter("SMS_Class");
         smsSource = nodeContext.getParameter("SMS_Source_No");
         channel = nodeContext.getParameter("channel");
+        smsLanguage = nodeContext.getParameter("SMS_Language");
         // -----------------------------------------------
 
         contentTable = lookupService.getTable(lookupServerName, lookupTableName,true);
@@ -115,7 +117,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
         bodyDto.setSource(smsSource);
 
         // --------------------------    SMS Content Lookup    --------------------------------------
-        smsContent = lookupServiceHandler.doLookup(action_id, channel);
+        smsContent = lookupServiceHandler.doLookup(action_id, channel, smsLanguage);
         if (smsContent.isEmpty()) {
             nodeLogger.error("Record not found in the lookup table: " + contentTable.getName());
             eventRecord.reject("LOOKUP_ERROR","Lookup table record not found.");
