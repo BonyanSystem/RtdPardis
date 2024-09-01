@@ -1,6 +1,6 @@
 package com.bonyan.rtd.service;
 
-import com.bonyan.rtd.PardisChunkMakerNode;
+import com.bonyan.rtd.PardisChunkBuilderNode;
 import com.bonyan.rtd.entity.Chunk;
 import com.bonyan.rtd.entity.ChunkRepository;
 import com.bonyan.rtd.entity.RecordList;
@@ -20,11 +20,11 @@ public class ChunkerService {
     private final ChunkWriter chunkWriter;
     private final EventRecordService eventRecordService;
     private final ChunkRepository<String> chunkRepository;
-    private final PardisChunkMakerNode.NodeParameters nodeParameters;
+    private final PardisChunkBuilderNode.NodeParameters nodeParameters;
     private Integer recordNumber;
 
 
-    public ChunkerService(EventRecordService eventRecordService, PardisChunkMakerNode.NodeParameters nodeParameters) {
+    public ChunkerService(EventRecordService eventRecordService, PardisChunkBuilderNode.NodeParameters nodeParameters) {
         this.eventRecordService = eventRecordService;
         this.nodeParameters = nodeParameters;
         this.chunkWriter = new ChunkWriter(eventRecordService);

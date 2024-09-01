@@ -8,14 +8,14 @@ import com.comptel.mc.node.logging.TxeLogger;
 
 import java.util.logging.Logger;
 
-public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Schedulable ,TimerObserver {
+public class PardisChunkBuilderNode extends Nodebase implements BusinessLogic, TimerObserver {
 
-    private static final Logger logger = Logger.getLogger(PardisChunkMakerNode.class.getName());
-    private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisChunkMakerNode.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(PardisChunkBuilderNode.class.getName());
+    private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisChunkBuilderNode.class.getCanonicalName());
     private NodeContext nodeContext;
     private ChunkerService chunkerService;
     private EventRecordService eventRecordService;
-    private PardisChunkMakerNode.NodeParameters nodeParams;
+    private PardisChunkBuilderNode.NodeParameters nodeParams;
 
     @Override
     public void init(NodeContext nodeContext) {
@@ -46,12 +46,12 @@ public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Sch
     }
 
     @Override
-    public void flush() throws Exception {
+    public void flush() {
         nodeLogger.info("nodeLogger: node flush start");
     }
 
     @Override
-    public void end() throws Exception {
+    public void end() {
         nodeLogger.info("nodeLogger: node 'end' start");
 
     }
@@ -81,13 +81,9 @@ public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Sch
     }
 
     @Override
-    public void schedule() {
-        nodeLogger.info("nodeLogger: node schedule start");
-
-    }
-    @Override
-    public void timer() throws Exception {
+    public void timer() {
         chunkerService.writeChunkRecords();
+        o_end();
     }
 
     public class NodeParameters {
