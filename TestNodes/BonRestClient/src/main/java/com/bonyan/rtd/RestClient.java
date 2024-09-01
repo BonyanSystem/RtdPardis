@@ -3,6 +3,7 @@ package com.bonyan.rtd;
 import com.bonyan.rtd.service.JettyClient;
 import com.bonyan.rtd.service.JettySingleRequestHandler;
 import com.bonyan.rtd.token.ApiInfo;
+import com.bonyan.rtd.token.Token;
 import com.bonyan.rtd.token.TokenDurationType;
 import com.bonyan.rtd.token.TokenType;
 import com.comptel.eventlink.core.Nodebase;
@@ -47,7 +48,6 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     private LinkedBlockingQueue<EventRecord> outputRecords;
     private List<String> incomingRequests;
     private ConcurrentHashMap<String, EventRecord> inputRecords;
-    String tokenValue = "";
     long lastCheck = System.currentTimeMillis();
     int counter = 0;
     EventRecord lastEventRecord = null;
@@ -69,8 +69,10 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     private int expirationDuration;
     private int renewalMarginPercentage;
 
+    private boolean useToken;
     private ApiInfo tokenApiInfo;
     private ApiInfo restApiInfo;
+    private Token token;
 
     @Override
     public void init(NodeContext nodeContext) throws Exception {
@@ -143,15 +145,15 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     private void processRequestRecord(EventRecord er) {
         logger.info("Processing request record... Token 1.2.2 " + this.lastCheck);
         this.lastEventRecord = er;
-        if (er.getField("Token-Method") != null) {
+        if (this.isUseToken()) {
             logger.info("Processing request record... found a Token method fix 18AUG v1");
-            if (this.getToken().isEmpty()) {
+            if (this.token == null || !token.isTokenValid()) {
+                this.token = this.client.getToken(er);
                 logger.info("OBTAIN_NEW_TOKEN");
-                this.tokenValue = this.client.getToken(er).getTokenValue();
-                er.addField("Header-Authorization", "Basic " + this.tokenValue);
+                er.addField("Header-Authorization", "Bearer " + this.token.getTokenValue());
             } else {
-                logger.info("USE_CURRENT_TOKEN_" + this.tokenValue);
-                er.addField("Header-Authorization", "Basic " + this.tokenValue);
+                logger.info("USE_CURRENT_TOKEN_" + this.token.getTokenValue());
+                er.addField("Header-Authorization", "Bearer " + this.token.getTokenValue());
             }
         } else {
             logger.info("Processing request record... can't find  a Token method");
@@ -262,57 +264,42 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     }
 
     private void readNodeParameters() {
-        this.setTokenProperties();
-        this.setTokenApiInfo();
-        logger.info("readNodeParameters(): Entered the function...");
-
+        this.useToken = this.nodeContext.getParameter("UseToken").equals("Yes");
+        if (this.useToken){
+            this.setTokenProperties();
+            this.setTokenApiInfo();
+        }
         this.clientRequestTimeout = this.nodeContext.getParameterInt("ClientRequestTimeout");
-        logger.info("ClientRequestTimeout: " + this.clientRequestTimeout);
-
         this.clientResponseContentBufferSize = this.nodeContext.getParameterInt("ClientResponseContentBufferSize");
-        logger.info("ClientResponseContentBufferSize: " + this.clientResponseContentBufferSize);
-
         this.jettyDiagnosticLevel = this.nodeContext.getParameter("JettyDiagnosticLevel");
-        logger.info("JettyDiagnosticLevel: " + this.jettyDiagnosticLevel);
 
         if (this.nodeContext.parameterExists("ServerRequestSleepTime")) {
             this.serverRequestSleepTime = this.nodeContext.getParameterInt("ServerRequestSleepTime");
         } else {
             this.serverRequestSleepTime = 0;
         }
-        logger.info("ServerRequestSleepTime: " + this.serverRequestSleepTime);
 
         if (this.nodeContext.parameterExists("ServerRequestTimeout")) {
             this.serverRequestTimeout = this.nodeContext.getParameterInt("ServerRequestTimeout");
         } else {
             this.serverRequestTimeout = 0;
         }
-        logger.info("ServerRequestTimeout: " + this.serverRequestTimeout);
 
         if (this.nodeContext.parameterExists("SendRequestWaitTime")) {
             this.sendRequestWaitTime = this.nodeContext.getParameterInt("sendRequestWaitTime");
         } else {
             this.sendRequestWaitTime = 0;
         }
-        logger.info("SendRequestWaitTime: " + this.sendRequestWaitTime);
 
         this.useJettyStdErrLog = this.nodeContext.getParameter("UseJettyStdErrLog").equals("Yes");
-        logger.info("UseJettyStdErrLog: " + this.nodeContext.getParameter("UseJettyStdErrLog"));
-        logger.info("readNodeParameters(): returning...");
     }
 
     public void setTokenApiInfo() {
-        if (this.nodeContext.parameterExists("UseToken")) {
-
             this.tokenApiInfo = new ApiInfo();
-
             tokenApiInfo.setMethod(this.nodeContext.getParameter("Token-Method"))
                     .setRequestId(this.nodeContext.getParameter("Token-Request-Id"))
-                    .setRemoteAddress(this.nodeContext.getParameter("Token-Remote-Address"))
-                    .setRemoteScheme(this.nodeContext.getParameter("Token-Remote-Scheme"))
-                    .setRequestURI(this.nodeContext.getParameter("Token-Request-URI"))
-                    .setQueryString(this.nodeContext.getParameter("Token-Query-String"));
-        }
+                    .setRequestURI(this.nodeContext.getParameter("Token-Request-URI"));
+
     }
 
     public ApiInfo getTokenApiInfo() {
@@ -348,6 +335,10 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
     public TokenType getTokenType() {
         return tokenType;
+    }
+
+    public boolean isUseToken() {
+        return useToken;
     }
 
     public int getRenewalMarginPercentage() {

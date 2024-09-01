@@ -159,7 +159,6 @@
             <artifactId>jetty-http</artifactId>
             <version>9.2.18.v20160721</version>
         </dependency>
-
         <dependency>
             <groupId>com.comptel.eventlink</groupId>
             <artifactId>el-manager</artifactId>

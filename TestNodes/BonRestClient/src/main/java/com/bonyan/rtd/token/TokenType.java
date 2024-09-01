@@ -17,6 +17,7 @@ public enum TokenType {
     }
 
     public static TokenType getTokenType(String tokenType) {
+        tokenType = tokenType + "_TOKEN";
         for (TokenType type: values()) {
             if (type.name().equals(tokenType)){
                 return type;
