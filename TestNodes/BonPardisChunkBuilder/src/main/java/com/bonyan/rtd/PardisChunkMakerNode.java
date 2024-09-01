@@ -87,7 +87,7 @@ public class PardisChunkMakerNode extends Nodebase implements BusinessLogic, Sch
     }
     @Override
     public void timer() throws Exception {
-        chunkerService.makeAndWriteChunkRecords();
+        chunkerService.writeChunkRecords();
     }
 
     public class NodeParameters {

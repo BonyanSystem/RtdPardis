@@ -32,20 +32,20 @@ public class ChunkerService {
         this.recordNumber = 0;
     }
 
-    public void makeOutput(String actionName, RecordList chunkList) {
+    public void writeChunk(String actionName, RecordList chunkList) {
         EventRecord eventRecord = this.eventRecordService.newRecord();
 
-        eventRecord.addField("record_generate_time", new Date().toString());
         Chunk<String> chunk = chunkRepository.get(actionName);
-        makeChunkRecord(chunk.getRtdAction(), chunkList, eventRecord);
+        buildChunk(chunk.getRtdAction(), chunkList, eventRecord);
 
         chunkWriter.writeRecord(eventRecord);
     }
 
-    public void makeChunkRecord(RtdAction<String> action, RecordList msisdnList, EventRecord eventRecord) {
+    public void buildChunk(RtdAction<String> action, RecordList msisdnList, EventRecord eventRecord) {
+        eventRecord.addField("record_generate_time", new Date().toString());
+        eventRecord.addField("chunk_id", action.getRequestId());
         Field actionBlock = eventRecord.addField("Action");
         actionBlock.addField("action_id", action.getActionName());
-        actionBlock.addField("request_id", action.getRequestId());
 
         int i = 1;
         Field chunkListBlock = eventRecord.addField("ChunkList");
@@ -53,19 +53,20 @@ public class ChunkerService {
             Field subListBlock = chunkListBlock.addField("Sub_" + i);
             subListBlock.addField("msisdn", msisdnPair.getKey());
             subListBlock.addField("retry_count", msisdnPair.getValue().toString());
+            i++;
         }
 
     }
 
-    public void makeAndWriteChunkRecords() {
+    public void writeChunkRecords() {
         for (String actionName : chunkRepository.keySet()) {
-            makeOutput(actionName, chunkRepository.get(actionName).getRecords());
+            writeChunk(actionName, chunkRepository.get(actionName).getRecords());
         }
         removeUsedChunk(null);
     }
 
-    public void makeAndWriteChunkRecord(RtdAction<String> action) {
-        makeOutput(action.getActionName(), chunkRepository.get(action.getActionName()).getRecords());
+    public void writeChunkRecord(RtdAction<String> action) {
+        writeChunk(action.getActionName(), chunkRepository.get(action.getActionName()).getRecords());
         removeUsedChunk(action);
     }
 
@@ -79,7 +80,7 @@ public class ChunkerService {
 
     public boolean addRecord(EventRecord eventRecord) {
         recordNumber++;
-        checkMaxUntouched();
+        writeUntouched();
 
         Integer retryCount = NodeRecordUtil.getFieldIntegerValue(eventRecord, "count");
 
@@ -91,14 +92,14 @@ public class ChunkerService {
             int chunkSize = chunkRepository.addRecord(rtdAction, msisdnPair);
 
             if (nodeParameters.getMaxChunkSizeParam().equals(chunkSize)) {
-                makeAndWriteChunkRecord(rtdAction);
+                writeChunkRecord(rtdAction);
             }
             return true;
         }
         return false;
     }
 
-    public void checkMaxUntouched() {
+    public void writeUntouched() {
         if (recordNumber >= nodeParameters.getMaxUntouchedRecordCount()) {
             writeUntouchedChunk();
             recordNumber = 0;
@@ -108,7 +109,7 @@ public class ChunkerService {
     public void writeUntouchedChunk() {
         Set<Chunk<String>> untouchedChunk = chunkRepository.getUntouchedChunk();
         for (Chunk<String> chunk : untouchedChunk) {
-            makeAndWriteChunkRecord(chunk.getRtdAction());
+            writeChunkRecord(chunk.getRtdAction());
         }
         chunkRepository.resetTouched();
     }
