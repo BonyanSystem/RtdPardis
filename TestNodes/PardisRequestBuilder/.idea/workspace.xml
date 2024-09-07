@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c068f2cc-9626-49cc-91d1-6766b41b94d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../../PardisRequestBuilder/src/main/java/com/bonyan/rtd/PardisRequestBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../PardisRequestBuilder/src/main/java/com/bonyan/rtd/PardisRequestBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../PardisRequestBuilder/src/main/java/com/bonyan/rtd/services/LookupServiceHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../PardisRequestBuilder/src/main/java/com/bonyan/rtd/services/LookupServiceHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../PardisRequestBuilder/src/main/java/com/bonyan/rtd/services/RequestWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../PardisRequestBuilder/src/main/java/com/bonyan/rtd/services/RequestWriter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="c068f2cc-9626-49cc-91d1-6766b41b94d5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -45,7 +40,6 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
     "last_opened_file_path": "D:/RTD/Codes/BonPardis/RtdPardis/PardisRequestBuilder",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -87,7 +81,8 @@
       <workItem from="1724581555467" duration="31540000" />
       <workItem from="1724776115318" duration="17278000" />
       <workItem from="1724826623866" duration="659000" />
-      <workItem from="1724962798013" duration="598000" />
+      <workItem from="1724962798013" duration="1191000" />
+      <workItem from="1725656582172" duration="633000" />
     </task>
     <servers />
   </component>

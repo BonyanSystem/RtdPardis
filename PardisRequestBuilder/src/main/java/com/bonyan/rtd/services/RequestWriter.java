@@ -14,20 +14,24 @@ public class RequestWriter extends Nodebase {
     public EventRecord inputRecord;
     public String requestBody;
     public  EventRecord outRecord;
-    public RequestWriter(EventRecordService erService,EventRecord inputEventRecord,String requestBody) {
+    public String endpointURI;
+    public RequestWriter(EventRecordService erService,EventRecord inputEventRecord,String requestBody, String endpointURI) {
         this.erService = erService;
         this.inputRecord = inputEventRecord;
         this.requestBody = requestBody;
         this.outRecord = (EventRecord) this.inputRecord.copy();
+        this.endpointURI = endpointURI;
+
     }
 
     public void buildOutRecord () {
         this.outRecord.addField("Method", "POST");
-        this.outRecord.addField("request", "true");
+        this.outRecord.addField("Request", "True");
         this.outRecord.addField("Body",this.requestBody);
         this.outRecord.addField("MMMHeader-User-Agent", "curl/7.19.7 (x86_64-redhat-linux-gnu)libcurl/7.19.7 NSS/3.14.0.0 zlib/1.2.3 libidn/1.18libssh2/1.4.2");
         this.outRecord.addField("Header-Content-Type", "application/json; charset=UTF-8");
         this.outRecord.addField("Header-Accept", "application/json");
+        this.outRecord.addField("Request-Uri", this.endpointURI);
     }
 
     public void writeOutRecord(){

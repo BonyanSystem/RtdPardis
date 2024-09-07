@@ -33,6 +33,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
     public String requestBodyString;
     public String smsContent;
     public String smsLanguage;
+    public String endpointURI;
 
 
 
@@ -52,6 +53,8 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
         smsSource = nodeContext.getParameter("SMS_Source_No");
         channel = nodeContext.getParameter("channel");
         smsLanguage = nodeContext.getParameter("SMS_Language");
+        endpointURI = nodeContext.getParameter("API_Endpoint_URI");
+        //http://192.168.5.84:4080/api/v2/sendBulk
         // -----------------------------------------------
 
         contentTable = lookupService.getTable(lookupServerName, lookupTableName,true);
@@ -91,7 +94,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
 
         // -----   Get Content ID
         Field actionBlock = eventRecord.getField("Action");
-        Field action_id_field = actionBlock.getField("action_id");
+        Field action_id_field = actionBlock.getField("content_id");
         String action_id = action_id_field.getValue();
 
 
@@ -132,7 +135,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
 
         // ------------------------     Build and Write Request Record    ------------------------------
 
-        RequestWriter agent = new RequestWriter(erService,eventRecord,requestBodyString);
+        RequestWriter agent = new RequestWriter(erService,eventRecord,requestBodyString, endpointURI);
         agent.writeOutRecord();
 
         /*
