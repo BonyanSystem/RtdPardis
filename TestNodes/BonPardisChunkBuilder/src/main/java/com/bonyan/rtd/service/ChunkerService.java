@@ -63,6 +63,9 @@ public class ChunkerService {
             writeChunk(actionName, chunkRepository.get(actionName).getRecords());
         }
         removeUsedChunk(null);
+        Nodebase.nb_pre_commit();
+        Nodebase.nb_request_commit();
+        Nodebase.nb_post_commit();
     }
 
     public void writeChunkRecord(RtdAction<String> action) {
