@@ -3,14 +3,14 @@ package com.bonyan.rtd.entity;
 import java.util.Map;
 
 public class Chunk<T> {
-    private T actionName;
+    private T actionId;
     private RtdAction<T> rtdAction;
     private RecordList records = new RecordList();
     private boolean touched;
 
-    public Chunk(T actionName) {
-        this.rtdAction = new RtdAction<>(actionName);
-        this.actionName = actionName;
+    public Chunk(T contentId) {
+        this.rtdAction = new RtdAction<>(contentId);
+        this.actionId = contentId;
     }
 
     public int addRecord(Map.Entry<String, Integer> msisdn) {
@@ -20,12 +20,12 @@ public class Chunk<T> {
     }
 
 
-    public T getActionName() {
-        return actionName;
+    public T getActionId() {
+        return actionId;
     }
 
-    public void setActionName(T actionName) {
-        this.actionName = actionName;
+    public void setActionId(T actionId) {
+        this.actionId = actionId;
     }
 
     public RtdAction<T> getRtdAction() {

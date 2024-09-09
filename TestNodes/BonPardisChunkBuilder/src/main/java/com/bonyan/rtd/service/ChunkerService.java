@@ -7,11 +7,10 @@ import com.bonyan.rtd.entity.RecordList;
 import com.bonyan.rtd.entity.RtdAction;
 import com.comptel.eventlink.core.Nodebase;
 import com.bonyan.rtd.utils.NodeRecordUtil;
-import com.comptel.eventlink.core.Nodebase;
 import com.comptel.mc.node.EventRecord;
 import com.comptel.mc.node.EventRecordService;
 import com.comptel.mc.node.Field;
-
+import java.text.DateFormat;
 import java.util.AbstractMap;
 import java.util.Date;
 import java.util.Map;
@@ -34,20 +33,22 @@ public class ChunkerService {
         this.recordNumber = 0;
     }
 
-    public void writeChunk(String actionName, RecordList chunkList) {
+    public void writeChunk(String contentId, RecordList chunkList) {
         EventRecord eventRecord = this.eventRecordService.newRecord();
 
-        Chunk<String> chunk = chunkRepository.get(actionName);
+        Chunk<String> chunk = chunkRepository.get(contentId);
         buildChunk(chunk.getRtdAction(), chunkList, eventRecord);
 
         chunkWriter.writeRecord(eventRecord);
     }
 
     public void buildChunk(RtdAction<String> action, RecordList msisdnList, EventRecord eventRecord) {
-        eventRecord.addField("record_generate_time", new Date().toString());
+        eventRecord.addField("record_generate_time", DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                .format(new Date()));
         eventRecord.addField("chunk_id", action.getRequestId());
         Field actionBlock = eventRecord.addField("Action");
-        actionBlock.addField("action_id", action.getActionName());
+        actionBlock.addField("action_id", action.getActionId());
+        actionBlock.addField("content_id", action.getContentId());
 
         int i = 1;
         Field chunkListBlock = eventRecord.addField("ChunkList");
@@ -61,8 +62,8 @@ public class ChunkerService {
     }
 
     public void writeChunkRecords() {
-        for (String actionName : chunkRepository.keySet()) {
-            writeChunk(actionName, chunkRepository.get(actionName).getRecords());
+        for (String contentId : chunkRepository.keySet()) {
+            writeChunk(contentId, chunkRepository.get(contentId).getRecords());
         }
         removeUsedChunk(null);
         Nodebase.nb_pre_commit();
@@ -71,13 +72,13 @@ public class ChunkerService {
     }
 
     public void writeChunkRecord(RtdAction<String> action) {
-        writeChunk(action.getActionName(), chunkRepository.get(action.getActionName()).getRecords());
+        writeChunk(action.getContentId(), chunkRepository.get(action.getContentId()).getRecords());
         removeUsedChunk(action);
     }
 
     public void removeUsedChunk(RtdAction<String> action) {
         if (action != null) {
-            chunkRepository.remove(action.getActionName());
+            chunkRepository.remove(action.getContentId());
         } else {
             chunkRepository.clear();
         }
@@ -87,13 +88,16 @@ public class ChunkerService {
         recordNumber++;
         writeUntouched();
 
-        Integer retryCount = NodeRecordUtil.getFieldIntegerValue(eventRecord, "count");
+        Integer retryCount = NodeRecordUtil.getFieldIntegerValue(eventRecord, "retry_count");
 
         if (retryCount < nodeParameters.getMaxSendRetryCount()) {
             String msisdn = NodeRecordUtil.getFieldStringValue(eventRecord, "msisdn");
+            String actionId = NodeRecordUtil.getFieldStringValue(eventRecord, "action_id");
+            String contentId = NodeRecordUtil.getFieldStringValue(eventRecord, "content_id");
 
-            RtdAction<String> rtdAction = new RtdAction<>(NodeRecordUtil.getFieldStringValue(eventRecord, "actionid"));
-            Map.Entry<String, Integer> msisdnPair = new AbstractMap.SimpleEntry<>(msisdn, retryCount);
+            RtdAction<String> rtdAction = new RtdAction<>(contentId);
+            rtdAction.setActionId(actionId);
+            Map.Entry<String, Integer> msisdnPair = new AbstractMap.SimpleEntry<>(msisdn, retryCount + 1);
             int chunkSize = chunkRepository.addRecord(rtdAction, msisdnPair);
 
             if (nodeParameters.getMaxChunkSizeParam().equals(chunkSize)) {

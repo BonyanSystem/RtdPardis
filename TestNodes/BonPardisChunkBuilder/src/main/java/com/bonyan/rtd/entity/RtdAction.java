@@ -6,16 +6,17 @@ import java.util.UUID;
 
 public class RtdAction<T> {
     private String requestId;
-    private T actionName;
+    private T actionId;
+    private T contentId;
     private String actionMessageContent;
 
 
     public RtdAction() {
     }
 
-    public RtdAction(T actionName) {
+    public RtdAction(T contentId) {
         generateNewId();
-        this.actionName = actionName;
+        this.contentId = contentId;
     }
 
     public String getRequestId() {
@@ -26,12 +27,20 @@ public class RtdAction<T> {
         this.requestId = UUID.randomUUID().toString();
     }
 
-    public T getActionName() {
-        return actionName;
+    public T getActionId() {
+        return actionId;
     }
 
-    public void setActionName(T actionName) {
-        this.actionName = actionName;
+    public void setActionId(T actionId) {
+        this.actionId = actionId;
+    }
+
+    public T getContentId() {
+        return contentId;
+    }
+
+    public void setContentId(T contentId) {
+        this.contentId = contentId;
     }
 
     public String getActionMessageContent() {
@@ -47,12 +56,12 @@ public class RtdAction<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RtdAction<T> rtdAction = (RtdAction<T>) o;
-        return Objects.equals(actionName, rtdAction.actionName);
+        return Objects.equals(contentId, rtdAction.contentId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(actionName);
+        return Objects.hashCode(contentId);
     }
 }
 

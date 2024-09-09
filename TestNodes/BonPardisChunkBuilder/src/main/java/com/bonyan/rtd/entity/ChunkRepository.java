@@ -8,8 +8,9 @@ import java.util.Set;
 public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
 
 
-    public int addRecord(RtdAction<String> rtdAction, Map.Entry<String, Integer> msisdn) {
-        return this.get(rtdAction.getActionName()).addRecord(msisdn);
+    public int addRecord(RtdAction<T> rtdAction, Map.Entry<String, Integer> msisdn) {
+        this.get(rtdAction.getContentId()).setRtdAction(rtdAction);
+        return this.get(rtdAction.getContentId()).addRecord(msisdn);
     }
 
     @Override
@@ -18,9 +19,9 @@ public class ChunkRepository<T> extends HashMap<T, Chunk<T>> {
         return super.get(key);
     }
 
-    public void addChunk(T actionName) {
-        Chunk<T> chunk = new Chunk<>(actionName);
-        this.put(actionName, chunk);
+    public void addChunk(T contentId) {
+        Chunk<T> chunk = new Chunk<>(contentId);
+        this.put(contentId, chunk);
     }
 
     public Set<Chunk<T>> getUntouchedChunk() {

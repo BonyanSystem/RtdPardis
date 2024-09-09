@@ -81,10 +81,11 @@
                         <configuration>
                             <executable>ssh</executable>
                             <arguments>
-                                <!--                                <argument>-p</argument>-->
-                                <!--                                <argument>2250</argument>-->
-                                <argument>elink@192.168.5.212</argument>
-                                <argument>mkdir -p /comptel/elink/zahra-el/cfg/AnyOS</argument>
+                                                                <argument>-p</argument>
+                                                                <argument>2250</argument>
+                                <argument>elink@192.168.5.149</argument>
+<!--                                <argument>mkdir -p /comptel/elink/zahra-el/cfg/AnyOS</argument>-->
+                                <argument>mkdir -p /comptel/elink/zahra/el-programming-samples/java-programming/ChunkBuilder/cfg/AnyOS</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -97,11 +98,11 @@
                         <configuration>
                             <executable>scp</executable>
                             <arguments>
-                                <!--                                <argument>-P</argument>-->
-                                <!--                                <argument>2250</argument>-->
+                                                                <argument>-P</argument>
+                                                                <argument>2250</argument>
                                 <argument>${project.build.directory}/app_AdapterNode.jar</argument>
-                                <argument>elink@192.168.5.212:/comptel/elink/zahra-el/cfg/AnyOS
-                                </argument>
+<!--                                <argument>elink@192.168.5.149:/comptel/elink/zahra-el/cfg/AnyOS</argument>-->
+                                <argument>elink@192.168.5.149:/comptel/elink/zahra/el-programming-samples/java-programming/ChunkBuilder/cfg/AnyOS</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -130,7 +131,8 @@
     <distributionManagement>
         <repository>
             <id>remote-repo</id>
-            <url>scp://192.168.5.212/comptel/elink/zahra-el/cfg/AnyOS</url>
+<!--            <url>scp://192.168.5.149/comptel/elink/zahra-el/cfg/AnyOS</url>-->
+            <url>scp://192.168.5.149/comptel/elink/zahra/el-programming-samples/java-programming/ChunkBuilder/cfg/AnyOS</url>
         </repository>
     </distributionManagement>
 </project>
