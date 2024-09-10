@@ -9,6 +9,7 @@ import com.comptel.mc.node.logging.TxeLogger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 
@@ -121,7 +122,7 @@ public class PardisRequestBuilder extends Nodebase implements BusinessLogic, Sch
 
         // --------------------------    SMS Content Lookup    --------------------------------------
         smsContent = lookupServiceHandler.doLookup(action_id, channel, smsLanguage);
-        if (smsContent.isEmpty()) {
+        if (Objects.equals(smsContent, "")) {
             nodeLogger.error("Record not found in the lookup table: " + contentTable.getName());
             eventRecord.reject("LOOKUP_ERROR","Lookup table record not found.");
         }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configuration elversion="6.1">
     <name>MCI_CFG_BON_PARDIS_REQUEST_BUILDER</name>
-    <version major="1" minor="0" defect="0" patch="PRE4"/>
+    <version major="1" minor="0" defect="0" patch="PRE5"/>
     <description>
 
 	</description>
@@ -80,7 +80,7 @@
             </attributes>
         </parameter>
         <parameter name="channel">
-            <value>Pardis</value>
+            <value>SMS</value>
             <description>Action Channel</description>
             <value_type>
                 <any/>
