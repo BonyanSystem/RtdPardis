@@ -199,8 +199,7 @@
                                 <!--                                    mkdir -p /comptel/elink/zahra-el/bon-rest-client-bln/bon-rest-client-app/app/AnyOS/-->
                                 <!--                                </argument>-->
                                 <argument>
-                                    mkdir -p
-                                    /comptel/elink/zahra/el-programming-samples/java-programming/RestClientNode/app/AnyOS
+                                    mkdir -p /comptel/elink/zahra/el-programming-samples/java-programming/RestClientNode/app/AnyOS
                                 </argument>
                             </arguments>
                         </configuration>
