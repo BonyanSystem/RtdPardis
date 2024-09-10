@@ -303,7 +303,6 @@ public final class JettyClient {
         if (statusCode!=SC_OK || responseBlock==null || responseBlock.getField("ResponseBody")==null){
             return "";
         } else {
-            String tokenApiResponse = responseBlock.getField("ResponseBody").getValue();
             Map<String, String> tokenResponseMap = parseResponseToJsonMap(this.responseBody);
             this.tokenValue = tokenResponseMap.get("access_token");
             return this.tokenValue;
@@ -374,10 +373,8 @@ public final class JettyClient {
     public void setParamsHeadersToken(EventRecord eventRecord, HttpClient httpClient, Request request) {
         CookieStore cookieStore = httpClient.getCookieStore();
         List<Field> fields = eventRecord.getFields();
-        Iterator<Field> iterator = fields.iterator();
 
-        while (iterator.hasNext()) {
-            Field field = iterator.next();
+        for (Field field : fields) {
             String fieldName = field.getName();
             String fieldValue = field.getValue();
             String headerName;
@@ -497,7 +494,6 @@ public final class JettyClient {
 
             this.nodeContext.writeMessage(MessageType.WARNING, this.errMsg);
             this.nodeLogger.error(this.errMsg);
-//            eventRecord.reject(REJECTED, this.errMsg);
             this.createRestIfaceErrorER(eventRecord, statusCode);
             return statusCode;
         }
@@ -525,11 +521,9 @@ public final class JettyClient {
             this.createRestIfaceErrorER(er, SC_UNAUTHORIZED);
             return SC_UNAUTHORIZED;
         } else {
-//            this.errMsg = "Realm or UserId field missing in input record";
             this.errMsg = "Realm or UserId field missing in input record tokenUri:" + this.tokenUri + ", token query:" + tokenUri.getQuery();
             this.nodeContext.writeMessage("RESTIF104");
             this.nodeLogger.warn("Missing ER Realm or UserId field!");
-//            er.reject(REJECTED, this.errMsg);
             this.createRestIfaceErrorER(er, SC_UNAUTHORIZED);
             return SC_UNAUTHORIZED;
         }
@@ -588,9 +582,6 @@ public final class JettyClient {
         }
         tokenUriBlock.addField("Token-Value", this.tokenValue);
         tokenUriBlock.addField("Response_Body", this.responseBody);
-        this.nodeApplication.txRebindAndInherit(errorER);
-
-
         this.erService.write("INTERFACE_OUT", errorER);
         errorER.reject(REJECTED, this.errMsg);
         this.nodeLogger.info("done Write to ER_OUTPUT_LINK link Error");
@@ -632,7 +623,7 @@ public final class JettyClient {
 
         responseBlock.addField("Body", this.responseBody);
         responseBlock.addField("Status", Integer.toString(response.getStatus()));
-        this.nodeApplication.txRebindAndInherit(restIfaceER);
+//        this.nodeApplication.txRebindAndInherit(restIfaceER);
 
         this.erService.write("INTERFACE_OUT", restIfaceER);
         this.nodeLogger.info("done Write to INTERFACE_OUT link");
