@@ -74,23 +74,25 @@ public class ResponseProcessorService extends Nodebase {
                 EventRecord newRecord = (EventRecord) tempRecord.copy();
                 newRecord.addField("msisdn", msisdnPair.getKey());
                 newRecord.addField("retry_count", msisdnPair.getValue().toString());
-                eventRecordService.write("OUT", newRecord);
+                eventRecordService.write("FAILED", newRecord);
             }
         } else {
             for(int i = 0; i < chunk.getSmsIds().size(); i++) {
                 String smsId = chunk.getSmsIds().get(i);
+                Map.Entry<String, Integer> msisdnPair = chunk.getRecords().get(i);
+                EventRecord newRecord = (EventRecord) tempRecord.copy();
+                newRecord.addField("msisdn", msisdnPair.getKey());
+                newRecord.addField("retry_count", msisdnPair.getValue().toString());
+                newRecord.addField("sms_id", smsId);
                 if (isNumeric(smsId)) {
                     int errorCode = Integer.parseInt(smsId);
                     if (errorCode > 0 && errorCode < 255) {
-                        Map.Entry<String, Integer> msisdnPair = chunk.getRecords().get(i);
-                        EventRecord newRecord = (EventRecord) tempRecord.copy();
                         newRecord.addField("error_msg", "pardis api could not send sms to this msisdn");
-                        newRecord.addField("error_status", smsId);
-                        newRecord.addField("msisdn", msisdnPair.getKey());
-                        newRecord.addField("retry_count", msisdnPair.getValue().toString());
-                        eventRecordService.write("OUT", newRecord);
+                        eventRecordService.write("FAILED", newRecord);
+                        return;
                     }
                 }
+                eventRecordService.write("SUCCEED", newRecord);
             }
         }
     }
