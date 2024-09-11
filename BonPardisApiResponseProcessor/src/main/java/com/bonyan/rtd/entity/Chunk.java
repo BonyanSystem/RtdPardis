@@ -7,16 +7,20 @@ import java.util.Map;
 public class Chunk<T> {
     private T contentId;
     private RtdAction<T> rtdAction;
-    private RecordList records = new RecordList();
-    private List<String> smsIds = new ArrayList<>();
+    private RecordList records;
+    private List<String> smsIds;
     private Integer status;
     private String errorMessage;
     private String responseBody;
 
     public Chunk() {
         this.rtdAction = new RtdAction<>();
+        this.records = new RecordList();
+        this.smsIds = new ArrayList<>();
     }
     public Chunk(T contentId) {
+        this.records = new RecordList();
+        this.smsIds = new ArrayList<>();
         this.rtdAction = new RtdAction<>(contentId);
         this.contentId = contentId;
     }
@@ -56,7 +60,7 @@ public class Chunk<T> {
     }
 
     public Chunk<T> setSmsIds(List<String> smsIds) {
-        this.smsIds = smsIds;
+        this.smsIds.addAll(smsIds);
         return this;
     }
 

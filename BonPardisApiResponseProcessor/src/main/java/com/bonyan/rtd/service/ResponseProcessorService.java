@@ -49,13 +49,13 @@ public class ResponseProcessorService extends Nodebase {
             chunk.setStatus(status);
             chunk.setErrorMessage(body);
             if (status.equals(200)) {
+                List<String> smsIds = JsonParser.getJsonValues(body);
+                chunk.setSmsIds(smsIds);
                 String responseBody = i_get("ResponseBody");
                 chunk.setResponseBody(responseBody);
-                List<String> smsIds = JsonParser.getJsonValues(body);
-                chunk.getSmsIds().addAll(smsIds);
             }
         } else {
-            i_reject("REJECTED","invalid input");
+            i_reject("REJECTED", "invalid input");
         }
         i_exit();
         i_end();
@@ -70,29 +70,34 @@ public class ResponseProcessorService extends Nodebase {
         if (!chunk.getStatus().equals(200)) {
             tempRecord.addField("error_msg", chunk.getErrorMessage());
             tempRecord.addField("error_status", chunk.getStatus().toString());
-            for(Map.Entry<String, Integer> msisdnPair: chunk.getRecords()) {
+            for (Map.Entry<String, Integer> msisdnPair : chunk.getRecords()) {
                 EventRecord newRecord = (EventRecord) tempRecord.copy();
                 newRecord.addField("msisdn", msisdnPair.getKey());
                 newRecord.addField("retry_count", msisdnPair.getValue().toString());
                 eventRecordService.write("FAILED", newRecord);
             }
         } else {
-            for(int i = 0; i < chunk.getSmsIds().size(); i++) {
+            if (chunk.getSmsIds().size() != chunk.getRecords().size()) {
+                i_reject("REJECTED", "invalid input, different size of sms ids and chunk list, smsIds size: "
+                        + chunk.getSmsIds().size() + ", chunk list size: " + chunk.getRecords().size());
+            }
+            for (int i = 0; i < chunk.getSmsIds().size(); i++) {
                 String smsId = chunk.getSmsIds().get(i);
                 Map.Entry<String, Integer> msisdnPair = chunk.getRecords().get(i);
                 EventRecord newRecord = (EventRecord) tempRecord.copy();
                 newRecord.addField("msisdn", msisdnPair.getKey());
                 newRecord.addField("retry_count", msisdnPair.getValue().toString());
                 newRecord.addField("sms_id", smsId);
+                int errorCode = -1;
                 if (isNumeric(smsId)) {
-                    int errorCode = Integer.parseInt(smsId);
-                    if (errorCode > 0 && errorCode < 255) {
-                        newRecord.addField("error_msg", "pardis api could not send sms to this msisdn");
-                        eventRecordService.write("FAILED", newRecord);
-                        return;
-                    }
+                    errorCode = Integer.parseInt(smsId);
                 }
-                eventRecordService.write("SUCCEED", newRecord);
+                if (errorCode > 0 && errorCode < 255) {
+                    newRecord.addField("error_msg", "pardis api could not send sms to this msisdn");
+                    eventRecordService.write("FAILED", newRecord);
+                } else {
+                    eventRecordService.write("SUCCEED", newRecord);
+                }
             }
         }
     }
