@@ -1,2 +1,4 @@
 # RtdPardis
-![image](https://github.com/user-attachments/assets/4ca59174-4b77-4915-91c9-978f3abd21dc)
+## Developed Nodes for Pardis Integration and their responsibilities
+
+![Pardis Nodes](https://github.com/user-attachments/assets/cce26da3-7262-475a-a2dc-2194a0dd2843)
