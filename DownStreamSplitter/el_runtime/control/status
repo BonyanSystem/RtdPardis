@@ -1,0 +1,15 @@
+Nodeid 1 start 2024-09-13 05:28:45
+Pid : 8627
+
+Input directories : 
+IN:/comptel/elink/catcry/action_bln/in
+#:/comptel/elink/catcry/action_bln/reprocess
+
+Output directories : 
+OUT_PARDIS -> /comptel/elink/catcry/action_bln/out/OUT_PARDIS
+OUT_CMS -> /comptel/elink/catcry/action_bln/out/OUT_CMS
+
+Internal storage dir : /comptel/elink/catcry/action_bln/storage
+Discarded files dir : /comptel/elink/catcry/action_bln/discarded
+Auditfile path : /comptel/elink/catcry/action_bln/audit
+Pidfile : /comptel/elink/catcry/action_bln/control/pidfile
