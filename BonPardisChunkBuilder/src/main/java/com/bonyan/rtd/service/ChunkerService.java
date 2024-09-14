@@ -62,8 +62,8 @@ public class ChunkerService {
     }
 
     public void writeChunkRecords() {
-        for (String contentId : chunkRepository.keySet()) {
-            writeChunk(contentId, chunkRepository.get(contentId).getRecords());
+        for (Map.Entry<String,Chunk<String>> entry : chunkRepository.entrySet()) {
+            writeChunk(entry.getKey(), entry.getValue().getRecords());
         }
         removeUsedChunk(null);
         Nodebase.nb_pre_commit();
@@ -84,14 +84,13 @@ public class ChunkerService {
         }
     }
 
-    public boolean addRecord(EventRecord eventRecord) {
+    public void addRecord(EventRecord eventRecord) {
         recordNumber++;
         writeUntouched();
 
         Integer retryCount = NodeRecordUtil.getFieldIntegerValue(eventRecord, "retry_count");
-
+        String msisdn = NodeRecordUtil.getFieldStringValue(eventRecord, "msisdn");
         if (retryCount < nodeParameters.getMaxSendRetryCount()) {
-            String msisdn = NodeRecordUtil.getFieldStringValue(eventRecord, "msisdn");
             String actionId = NodeRecordUtil.getFieldStringValue(eventRecord, "action_id");
             String contentId = NodeRecordUtil.getFieldStringValue(eventRecord, "content_id");
 
@@ -103,9 +102,10 @@ public class ChunkerService {
             if (nodeParameters.getMaxChunkSizeParam().equals(chunkSize)) {
                 writeChunkRecord(rtdAction);
             }
-            return true;
+        } else {
+            eventRecord.reject("REJECTED", "Message for '" + msisdn + "' has been sent "
+                    + nodeParameters.getMaxSendRetryCount() + " times.");
         }
-        return false;
     }
 
     public void writeUntouched() {

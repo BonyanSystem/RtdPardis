@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 public class PardisChunkBuilderNode extends Nodebase implements BusinessLogic, TimerObserver {
 
-    private static final Logger logger = Logger.getLogger(PardisChunkBuilderNode.class.getName());
     private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisChunkBuilderNode.class.getCanonicalName());
     private NodeContext nodeContext;
     private ChunkerService chunkerService;
@@ -27,8 +26,9 @@ public class PardisChunkBuilderNode extends Nodebase implements BusinessLogic, T
             this.chunkerService = new ChunkerService(eventRecordService, nodeParams);
 
             nodeLogger.info("nodeLogger: node init end");
-        } catch (Exception ex) {
-            nodeLogger.info("nodeLogger: Exception in Init method: " + ex.getMessage());
+        } catch (Exception exception) {
+            this.nodeContext.writeMessage("InitException: " + exception.getMessage());
+            nodeLogger.info("nodeLogger: Exception in Init method: " + exception.getMessage());
         }
     }
 
@@ -39,10 +39,7 @@ public class PardisChunkBuilderNode extends Nodebase implements BusinessLogic, T
 
     @Override
     public void process(EventRecord eventRecord) {
-        boolean successfulAdd = chunkerService.addRecord(eventRecord);
-        if (!successfulAdd) {
-            nb_reject("REJECTED", "limited retry count overed");
-        }
+        chunkerService.addRecord(eventRecord);
     }
 
     @Override
@@ -87,9 +84,9 @@ public class PardisChunkBuilderNode extends Nodebase implements BusinessLogic, T
     }
 
     public class NodeParameters {
-        private Integer maxChunkSizeParam;
-        private Integer maxSendRetryCount;
-        private Integer maxUntouchedRecordCount;
+        private final Integer maxChunkSizeParam;
+        private final Integer maxSendRetryCount;
+        private final Integer maxUntouchedRecordCount;
 
         public NodeParameters() {
             this.maxChunkSizeParam = nodeContext.getParameterInt("chunker-max-size");
