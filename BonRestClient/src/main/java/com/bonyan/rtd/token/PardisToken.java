@@ -10,8 +10,6 @@ public class PardisToken implements Token {
     private int renewalMarginPercentage;
     private Date expirationTime;
 
-
-
     public PardisToken() {
     }
 

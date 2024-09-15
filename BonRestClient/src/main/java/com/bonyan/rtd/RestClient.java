@@ -29,9 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class RestClient extends Nodebase implements BusinessLogic, Schedulable
-        , TransactionEndpoint, TimerObserver
-//        , LookupServiceUser
-{
+        , TransactionEndpoint, TimerObserver {
     private final Object transactionLock = new Object();
 
     public static final String OUTPUT_LINK = "INTERFACE_OUT";
@@ -71,7 +69,6 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
     private boolean useToken;
     private ApiInfo tokenApiInfo;
-    private ApiInfo restApiInfo;
     private Token token;
 
     @Override
@@ -118,7 +115,7 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
     }
 
-    private void processAnswerRecord(EventRecord er) throws RuntimeException {
+    private void processAnswerRecord(EventRecord er) {
         logger.info("Processing answer record:");
         logger.debug(er.toString());
         String status = Utils.getErField(er, "Status");
@@ -296,7 +293,7 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
     public void setTokenApiInfo() {
             this.tokenApiInfo = new ApiInfo();
-            tokenApiInfo.setMethod(this.nodeContext.getParameter("Token-Method"))
+            this.tokenApiInfo.setMethod(this.nodeContext.getParameter("Token-Method"))
                     .setRequestId(this.nodeContext.getParameter("Token-Request-Id"))
                     .setRequestURI(this.nodeContext.getParameter("Token-Request-URI"));
 

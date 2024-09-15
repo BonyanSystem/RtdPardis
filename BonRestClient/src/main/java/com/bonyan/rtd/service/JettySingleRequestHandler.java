@@ -13,6 +13,13 @@ import com.comptel.mc.node.Field;
 import com.comptel.mc.node.TransactionContext;
 import com.comptel.mc.node.logging.NodeLoggerFactory;
 import com.comptel.mc.node.logging.TxeLogger;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,25 +27,14 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 
 public class JettySingleRequestHandler extends AbstractHandler {
+    public static final String HEADER = "Header-";
+    public static final String COOKIE = "Cookie-";
+    public static final String INTERFACE_OUT = "INTERFACE_OUT";
     private final RestClient nodeApplication;
     private final TxeLogger logger;
     private final EventRecordService eventRecordService;
@@ -47,14 +43,6 @@ public class JettySingleRequestHandler extends AbstractHandler {
     private final int serverRequestSleepTime;
     private final int serverRequestTimeout;
     private final boolean shutdownStarted;
-
-    public static final String HEADER = "Header-";
-    public static final String COOKIE = "Cookie-";
-    public static final String INTERFACE_OUT = "INTERFACE_OUT";
-
-    public boolean isShutdownStarted() {
-        return shutdownStarted;
-    }
 
     public JettySingleRequestHandler(RestClient nodeApplication) {
         this.nodeApplication = nodeApplication;
@@ -65,6 +53,10 @@ public class JettySingleRequestHandler extends AbstractHandler {
         this.serverRequestSleepTime = nodeApplication.getServerRequestSleepTime();
         this.serverRequestTimeout = nodeApplication.getServerRequestTimeout();
         this.shutdownStarted = false;
+    }
+
+    public boolean isShutdownStarted() {
+        return shutdownStarted;
     }
 
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -135,7 +127,8 @@ public class JettySingleRequestHandler extends AbstractHandler {
         }
     }
 
-    private void processAnswer(HttpServletRequest request, EventRecord inputER,String requestId, EventRecord answerER, HttpServletResponse response) throws IOException {
+    private void processAnswer(HttpServletRequest request, EventRecord inputER, String requestId,
+                               EventRecord answerER, HttpServletResponse response) {
         logger.debug("handle: Answer received from nodebase queue.");
         nodeApplication.getIncomingRequests().remove(requestId);
         logger.debug("handle: Request-Id is removed from the incoming requests list.");
@@ -180,6 +173,7 @@ public class JettySingleRequestHandler extends AbstractHandler {
         logger.debug("handle: Request-Id is removed from the incoming requests list.");
         answer.cancel(true);
     }
+
     private EventRecord convertMessageToER(HttpServletRequest request, String requestId) throws IOException {
         logger.debug("convertMessageToER: Converting message to ER...");
 
@@ -275,7 +269,7 @@ public class JettySingleRequestHandler extends AbstractHandler {
             BufferedReader in = new BufferedReader(new InputStreamReader(request.getInputStream()));
 
             String line;
-            while((line = in.readLine()) != null) {
+            while ((line = in.readLine()) != null) {
                 requestBody.append(line);
             }
 
@@ -325,7 +319,7 @@ public class JettySingleRequestHandler extends AbstractHandler {
 
         String errMsg;
         Field responseBodyField;
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             responseBodyField = iterator.next();
             String name = responseBodyField.getName();
             String value = responseBodyField.getValue();
@@ -395,7 +389,7 @@ public class JettySingleRequestHandler extends AbstractHandler {
                     JettySingleRequestHandler.this.logger.debug("ResponseWaitTask:call: Sleeping for " + JettySingleRequestHandler.this.serverRequestSleepTime + " milliseconds...");
                     Thread.sleep(JettySingleRequestHandler.this.serverRequestSleepTime);
                 }
-            } while(answerER == null);
+            } while (answerER == null);
 
             return answerER;
         }

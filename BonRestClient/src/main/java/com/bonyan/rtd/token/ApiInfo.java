@@ -1,7 +1,5 @@
 package com.bonyan.rtd.token;
 
-import java.net.URI;
-
 public class ApiInfo {
     private String requestId;
     private String method;
@@ -10,7 +8,6 @@ public class ApiInfo {
     private Integer remotePort;
     private String requestURI;
     private String queryString;
-    private URI requestUri;
     private String errMsg;
     private String responseBody;
 
@@ -74,15 +71,6 @@ public class ApiInfo {
 
     public ApiInfo setQueryString(String queryString) {
         this.queryString = queryString;
-        return this;
-    }
-
-    public URI getRequestUri() {
-        return requestUri;
-    }
-
-    public ApiInfo setRequestUri(URI requestUri) {
-        this.requestUri = requestUri;
         return this;
     }
 

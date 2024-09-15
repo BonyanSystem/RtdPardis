@@ -1,7 +1,5 @@
 package com.bonyan.rtd.token;
 
-import java.util.Date;
-
 public class TokenAttributes {
 
     private String tokenValue;

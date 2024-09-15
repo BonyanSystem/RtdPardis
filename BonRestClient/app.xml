@@ -335,6 +335,10 @@
         </file>
     </files>
     <messages>
+        <message key="uriSyntaxException" type="E">
+            <text>URI syntax exception: '%s'</text>
+            <explanation>URI syntax exception</explanation>
+        </message>
         <message key="RESTIF006" type="E">
             <text>Empty key pass: '%s'</text>
             <explanation>Empty key pass</explanation>

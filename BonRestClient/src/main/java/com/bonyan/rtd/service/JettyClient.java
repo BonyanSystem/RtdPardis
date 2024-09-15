@@ -7,7 +7,9 @@ package com.bonyan.rtd.service;
 
 import com.bonyan.rtd.RestClient;
 import com.bonyan.rtd.Utils;
-import com.bonyan.rtd.token.*;
+import com.bonyan.rtd.token.Token;
+import com.bonyan.rtd.token.TokenAttributes;
+import com.bonyan.rtd.token.TokenFactory;
 import com.comptel.mc.node.*;
 import com.comptel.mc.node.logging.NodeLoggerFactory;
 import com.comptel.mc.node.logging.TxeLogger;
@@ -28,7 +30,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -52,7 +53,17 @@ public final class JettyClient {
     public static final String HEADER_CONTENT_TYPE_FIELD = "Header-Content-Type";
     public static final String HEADER_ACCEPT_TYPE_FIELD = "Header-Accept";
     public static final String HEADER_USER_AGENT_FIELD = "Header-User-Agent";
+    public static final String RESTIF010 = "RESTIF010";
+    public static final String REJECTED = "REJECTED";
+    public static final String HOST_IS = "Host is:";
+    public static final String URI_IS = " URI:";
+    public static final String PORT_IS = " Port:";
+    public static final String REMOTE_SCHEME = "Remote-Scheme";
+    public static final String REMOTE_PORT = "Remote-Port";
+    public static final String RESPONSE = "Response";
     private static final String REALM_REGEX = ".realm$";
+    private static final String URI_SYNTAX_EXCEPTION = "uriSyntaxException";
+
     private final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(JettyClient.class.getCanonicalName());
     private final Logger logger = Logger.getLogger(JettyClient.class.getName());
     private final RestClient nodeApplication;
@@ -70,14 +81,6 @@ public final class JettyClient {
     private String responseBody;
     private String tokenValue;
 
-    public static final String RESTIF010 = "RESTIF010";
-    public static final String REJECTED = "REJECTED";
-    public static final String HOST_IS = "Host is:";
-    public static final String URI_IS = " URI:";
-    public static final String PORT_IS = " Port:";
-    public static final String REMOTE_SCHEME = "Remote-Scheme";
-    public static final String REMOTE_PORT = "Remote-Port";
-
     public JettyClient(RestClient app) {
         this.nodeApplication = app;
         this.nodeContext = app.getNodeContext();
@@ -85,7 +88,7 @@ public final class JettyClient {
         this.clientResponseContentBufferSize = app.getClientResponseContentBufferSize();
     }
 
-    public int createRESTClientConnection(EventRecord eventRecord, EventRecordService erService) {
+    public void createRESTClientConnection(EventRecord eventRecord, EventRecordService erService) {
         this.erService = erService;
         this.method = Utils.getErField(eventRecord, "Method");
         this.requestId = Utils.getErField(eventRecord, "Request-Id");
@@ -93,7 +96,7 @@ public final class JettyClient {
         try {
             this.apiUri = new URI(this.requestURI.trim());
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            this.nodeContext.writeMessage(URI_SYNTAX_EXCEPTION + e.getMessage());
         }
         this.nodeApplication.associateTransaction(eventRecord, this.requestId);
         this.errMsg = this.validateInputFields(this.apiUri);
@@ -101,7 +104,6 @@ public final class JettyClient {
             this.nodeLogger.error(this.errMsg);
             eventRecord.reject(REJECTED, this.errMsg);
             this.createRestIfaceErrorER(eventRecord, SC_BAD_REQUEST);
-            return SC_BAD_REQUEST;
         } else {
             HttpClient httpClient;
             if (this.apiUri.getScheme().equalsIgnoreCase("https")) {
@@ -115,7 +117,7 @@ public final class JettyClient {
                     this.nodeLogger.error(this.errMsg);
                     eventRecord.reject(REJECTED, this.errMsg);
                     this.createRestIfaceErrorER(eventRecord, SC_BAD_REQUEST);
-                    return SC_BAD_REQUEST;
+                    return;
                 }
 
                 this.nodeLogger.info("HTTP connection requested...");
@@ -125,18 +127,17 @@ public final class JettyClient {
 
             try {
                 httpClient.start();
-            } catch (Exception var6) {
-                this.errMsg = var6.getMessage();
+            } catch (Exception exception) {
+                this.errMsg = exception.getMessage();
                 this.nodeContext.writeMessage("RESTIF012", httpClient.getState(), this.errMsg);
                 this.nodeLogger.error("Unable to initialize client connection.:" + httpClient.getState() + ";" + this.errMsg);
                 eventRecord.reject(REJECTED, this.errMsg);
                 this.createRestIfaceErrorER(eventRecord, SC_CLIENT_START_ERROR);
-                return SC_CLIENT_START_ERROR;
+                return;
             }
 
-            int statusCode = this.createAndSendHttpRequest(httpClient, eventRecord, this.apiUri, this.nodeApplication.isUseToken());
+            this.createAndSendHttpRequest(httpClient, eventRecord, this.apiUri, this.nodeApplication.isUseToken());
             this.nodeLogger.info("http Client start..with state END:" + httpClient.getState());
-            return statusCode;
         }
     }
 
@@ -146,78 +147,82 @@ public final class JettyClient {
         tokenAttributes.setExpirationDuration(this.nodeApplication.getExpirationDuration());
         tokenAttributes.setRenewalMarginPercentage(this.nodeApplication.getRenewalMarginPercentage());
 
-        return TokenFactory.buildToken(this.nodeApplication.getTokenType(),tokenAttributes);
+        return TokenFactory.buildToken(this.nodeApplication.getTokenType(), tokenAttributes);
     }
 
     public String getTokenValue(EventRecord eventRecord) {
         String token = "";
 
         if (this.nodeApplication.isUseToken()) {
-            this.nodeLogger.info("getToken...");
-            this.method = this.nodeApplication.getTokenApiInfo().getMethod();
-            this.nodeLogger.info("1.4getToken..." + this.method);
-            this.requestId = this.nodeApplication.getTokenApiInfo().getRequestId();
-            this.requestURI = this.nodeApplication.getTokenApiInfo().getRequestURI();
-            try {
-                this.tokenUri = new URI(this.requestURI);
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-
+            this.setTokenUriInfo();
             this.errMsg = this.validateInputFields(this.tokenUri);
             if (!this.errMsg.isEmpty()) {
-                this.nodeLogger.error(this.errMsg);
-                eventRecord.reject(REJECTED, this.errMsg);
-                this.createRestIfaceErrorER(eventRecord, SC_BAD_REQUEST);
+                handleGetTokenReject(eventRecord, SC_BAD_REQUEST);
                 return token;
             } else {
-                HttpClient httpClient;
-                if (this.tokenUri.getScheme().equalsIgnoreCase("https")) {
-                    this.nodeLogger.info("HTTPS connection requested...");
-                    httpClient = new HttpClient(this.sslContextFactory);
-                    httpClient.setFollowRedirects(false);
-                } else {
-                    if (!this.tokenUri.getScheme().equalsIgnoreCase("http")) {
-                        this.errMsg = "Validation error for field: Remote-Scheme, invalid value: " + this.tokenUri.getScheme();
-                        this.nodeContext.writeMessage(RESTIF010, REMOTE_SCHEME, this.tokenUri.getScheme());
-                        this.nodeLogger.error(this.errMsg);
-                        eventRecord.reject(REJECTED, this.errMsg);
-                        this.createRestIfaceErrorER(eventRecord, SC_BAD_REQUEST);
-                        return token;
-                    }
-
-                    this.nodeLogger.info("HTTP connection requested...");
-                    httpClient = new HttpClient();
-                    httpClient.setFollowRedirects(false);
-                }
-
-                try {
-                    httpClient.start();
-                } catch (Exception var5) {
-                    Exception e = var5;
-                    this.errMsg = e.getMessage();
-                    this.nodeContext.writeMessage("RESTIF012", httpClient.getState(), this.errMsg);
-                    this.nodeLogger.error("Unable to initialize client connection.:" + httpClient.getState() + ";" + this.errMsg);
-                    eventRecord.reject(REJECTED, this.errMsg);
-                    this.createRestIfaceErrorER(eventRecord, SC_CLIENT_START_ERROR);
-                    return token;
-                }
-
-                if (this.tokenUri == null) {
-                    this.nodeLogger.error("tokenUri is null");
-                } else if (this.tokenUri.getQuery() == null) {
-                    this.nodeLogger.error("tokenUri.getQuery() is null");
-                } else {
-                    this.nodeLogger.warn("token uri: " + this.tokenUri);
-                    this.nodeLogger.warn("token uri query: " + this.tokenUri.getQuery());
-                }
-                token = this.createAndSendHttpRequestGetToken(httpClient, eventRecord, this.tokenUri, false);
-                this.nodeLogger.info("http Client start..with state END:" + token);
-                return token;
+                return this.sendTokenRequest(eventRecord);
             }
         }
         return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNhdGNyeSIsImV4cCI6MTcyODQzNzMxOH0" +
                 ".PZmvrcM238NtuWeKsTauA5VrJsxDGRMGnEUeQZL1YyI";
+    }
+
+    private void handleGetTokenReject(EventRecord eventRecord, int status) {
+        this.nodeLogger.error(this.errMsg);
+        eventRecord.reject(REJECTED, this.errMsg);
+        this.createRestIfaceErrorER(eventRecord, status);
+    }
+
+    public void setTokenUriInfo() {
+        this.method = this.nodeApplication.getTokenApiInfo().getMethod();
+        this.requestId = this.nodeApplication.getTokenApiInfo().getRequestId();
+        this.requestURI = this.nodeApplication.getTokenApiInfo().getRequestURI();
+        try {
+            this.tokenUri = new URI(this.requestURI);
+        } catch (URISyntaxException e) {
+            this.nodeContext.writeMessage(URI_SYNTAX_EXCEPTION + e.getMessage());
+        }
+    }
+
+    public String sendTokenRequest(EventRecord eventRecord) {
+        String token = "";
+        HttpClient httpClient;
+        if (this.tokenUri.getScheme().equalsIgnoreCase("https")) {
+            this.nodeLogger.info("HTTPS connection requested...");
+            httpClient = new HttpClient(this.sslContextFactory);
+            httpClient.setFollowRedirects(false);
+        } else {
+            if (!this.tokenUri.getScheme().equalsIgnoreCase("http")) {
+                this.errMsg = "Validation error for field: Remote-Scheme, invalid value: " + this.tokenUri.getScheme();
+                this.nodeContext.writeMessage(RESTIF010, REMOTE_SCHEME, this.tokenUri.getScheme());
+                handleGetTokenReject(eventRecord, SC_BAD_REQUEST);
+                return token;
+            }
+
+            this.nodeLogger.info("HTTP connection requested...");
+            httpClient = new HttpClient();
+            httpClient.setFollowRedirects(false);
+        }
+
+        try {
+            httpClient.start();
+        } catch (Exception exception) {
+            this.errMsg = exception.getMessage();
+            this.nodeContext.writeMessage("RESTIF012", httpClient.getState(), this.errMsg);
+            this.handleGetTokenReject(eventRecord, SC_CLIENT_START_ERROR);
+            return token;
+        }
+
+        if (this.tokenUri.getQuery() == null) {
+            this.nodeLogger.error("tokenUri.getQuery() is null");
+        } else {
+            this.nodeLogger.warn("token uri: " + this.tokenUri);
+            this.nodeLogger.warn("token uri query: " + this.tokenUri.getQuery());
+        }
+        token = this.createAndSendHttpRequestGetToken(httpClient, eventRecord, this.tokenUri, false);
+        this.nodeLogger.info("http Client start..with state END:" + token);
+        return token;
+
     }
 
     private String validateInputFields(URI uri) {
@@ -251,8 +256,8 @@ public final class JettyClient {
                     this.nodeLogger.info("URL string is:" + uri);
                     return "";
                 } catch (URISyntaxException syntaxException) {
+                    this.nodeContext.writeMessage(URI_SYNTAX_EXCEPTION + syntaxException.getMessage());
                     errorMessage = "URI building error: " + syntaxException.getMessage();
-                    this.nodeContext.writeMessage("RESTIF011", syntaxException.getMessage());
                     return errorMessage;
                 }
             }
@@ -263,7 +268,7 @@ public final class JettyClient {
         return method != null && !method.isEmpty() && method.toUpperCase().matches("GET|PUT|POST|DELETE|CONNECT|HEAD");
     }
 
-    public int createAndSendHttpRequest(HttpClient httpClient, EventRecord eventRecord, URI uri, boolean authFlag) {
+    public void createAndSendHttpRequest(HttpClient httpClient, EventRecord eventRecord, URI uri, boolean authFlag) {
         AtomicReference<Result> resultRef = new AtomicReference<>();
         Request request = httpClient.newRequest(uri);
         this.nodeLogger.info(HOST_IS + request.getHost() + PORT_IS + request.getPort() + URI_IS + request.getURI());
@@ -272,7 +277,9 @@ public final class JettyClient {
         this.setParamsHeadersCookies(eventRecord, httpClient, request);
         request.timeout(this.clientRequestTimeout, TimeUnit.MILLISECONDS);
         int statusCode = this.sendHttpRequest(request, resultRef, eventRecord);
-        return statusCode != SC_OK ? statusCode : this.processRequestResult(httpClient, resultRef, eventRecord, authFlag);
+        if (statusCode == SC_OK) {
+            this.processRequestResult(httpClient, resultRef, eventRecord, authFlag);
+        }
     }
 
     public String createAndSendHttpRequestGetToken(HttpClient httpClient, EventRecord eventRecord, URI uri, boolean authFlag) {
@@ -299,8 +306,8 @@ public final class JettyClient {
         this.nodeLogger.warn("statusCode: " + statusCode);
         this.closeClientConnectionResult(httpClient, eventRecord, statusCode);
         this.nodeLogger.warn("eventRecord after api call: " + eventRecord);
-        Field responseBlock = eventRecord.getField("Response");
-        if (statusCode!=SC_OK || responseBlock==null || responseBlock.getField("ResponseBody")==null){
+        Field responseBlock = eventRecord.getField(RESPONSE);
+        if (statusCode != SC_OK || responseBlock == null || responseBlock.getField("ResponseBody") == null) {
             return "";
         } else {
             Map<String, String> tokenResponseMap = parseResponseToJsonMap(this.responseBody);
@@ -426,24 +433,17 @@ public final class JettyClient {
         try {
             responseReceived = latch.await(this.clientRequestTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException exception) {
-            // Restore the interrupted status of the thread
             Thread.currentThread().interrupt();
-
-            // Handle the exception and ensure null checks
             this.errMsg = exception.getMessage();
-            statusCode = HttpStatus.INTERNAL_SERVER_ERROR_500; // Default to internal server error
+            statusCode = HttpStatus.INTERNAL_SERVER_ERROR_500;
 
-            // Check if resultRef or its response is null before accessing
             if (resultRef.get() != null && resultRef.get().getResponse() != null) {
                 statusCode = resultRef.get().getResponse().getStatus();
             }
 
-            // Log the error messages appropriately
             this.nodeContext.writeMessage("RESTIF100", this.errMsg);
             logger.log(Level.WARNING, "Error in latch.await InterruptedException: {0}", this.errMsg);
             this.nodeLogger.warn("Error in latch.await InterruptedException: {}", this.errMsg);
-
-            // Create error interface and return the status code
             this.createRestIfaceErrorER(eventRecord, statusCode);
             return statusCode;
         }
@@ -455,7 +455,7 @@ public final class JettyClient {
             this.nodeLogger.error(this.errMsg);
             this.createRestIfaceErrorER(eventRecord, statusCode);
         }
-        Field responseBlock = eventRecord.addField("Response");
+        Field responseBlock = eventRecord.addField(RESPONSE);
         responseBlock.addField("ResponseBody", this.responseBody);
         return statusCode;
     }
@@ -513,20 +513,18 @@ public final class JettyClient {
         }
 
         if (!realm.isEmpty() && !user.isEmpty()) {
-
             this.errMsg = "User Credentials cannot be found in from storage";
             this.nodeContext.writeMessage("RESTIF105");
             this.nodeLogger.warn(this.errMsg);
             er.reject(REJECTED, this.errMsg);
             this.createRestIfaceErrorER(er, SC_UNAUTHORIZED);
-            return SC_UNAUTHORIZED;
         } else {
-            this.errMsg = "Realm or UserId field missing in input record tokenUri:" + this.tokenUri + ", token query:" + tokenUri.getQuery();
+            this.errMsg = "Realm or UserId field missing in input record";
             this.nodeContext.writeMessage("RESTIF104");
             this.nodeLogger.warn("Missing ER Realm or UserId field!");
             this.createRestIfaceErrorER(er, SC_UNAUTHORIZED);
-            return SC_UNAUTHORIZED;
         }
+        return SC_UNAUTHORIZED;
     }
 
     private int closeClientConnectionResult(HttpClient httpClient, EventRecord eventRecord, int statusCode) {
@@ -542,11 +540,10 @@ public final class JettyClient {
             }
 
             return statusCode;
-        } catch (Exception var5) {
-            Exception ex = var5;
-            this.errMsg = ex.getMessage();
-            this.nodeContext.writeMessage("RESTIF013", ex.getLocalizedMessage(), this.errMsg);
-            this.nodeLogger.error("Client cleanup failed: " + ex.getLocalizedMessage() + ";" + this.errMsg);
+        } catch (Exception exception) {
+            this.errMsg = exception.getMessage();
+            this.nodeContext.writeMessage("RESTIF013", exception.getLocalizedMessage(), this.errMsg);
+            this.nodeLogger.error("Client cleanup failed: " + exception.getLocalizedMessage() + ";" + this.errMsg);
             eventRecord.reject(REJECTED, this.errMsg);
             this.createRestIfaceErrorER(eventRecord, SC_BAD_REQUEST);
             return SC_BAD_REQUEST;
@@ -568,19 +565,22 @@ public final class JettyClient {
 
         Field tokenUriBlock = errorER.addField("TokenUri");
 
-        tokenUriBlock.addField("Token-Uri", this.tokenUri.toString());
-        tokenUriBlock.addField("Token-Query", this.tokenUri.getQuery());
-        tokenUriBlock.addField("Token-Scheme", this.tokenUri.getScheme());
-        tokenUriBlock.addField("Token-RawPath", this.tokenUri.getRawPath());
-        tokenUriBlock.addField("Token-Path", this.tokenUri.getPath());
-        tokenUriBlock.addField("Token-Host", this.tokenUri.getHost());
-        tokenUriBlock.addField("Token-Authority", this.tokenUri.getAuthority());
-        tokenUriBlock.addField("Token-Port", String.valueOf(this.tokenUri.getPort()));
-        Map<String, String> responseBodyMap = parseResponseToJsonMap(this.responseBody);
-        for (Map.Entry<String, String> entry : responseBodyMap.entrySet()) {
-            tokenUriBlock.addField("Token_" + entry.getKey(), entry.getValue());
+        if (nodeApplication.isUseToken()){
+            tokenUriBlock.addField("Token-Uri", this.tokenUri.toString());
+            tokenUriBlock.addField("Token-Query", this.tokenUri.getQuery());
+            tokenUriBlock.addField("Token-Scheme", this.tokenUri.getScheme());
+            tokenUriBlock.addField("Token-RawPath", this.tokenUri.getRawPath());
+            tokenUriBlock.addField("Token-Path", this.tokenUri.getPath());
+            tokenUriBlock.addField("Token-Host", this.tokenUri.getHost());
+            tokenUriBlock.addField("Token-Authority", this.tokenUri.getAuthority());
+            tokenUriBlock.addField("Token-Port", String.valueOf(this.tokenUri.getPort()));
+            Map<String, String> responseBodyMap = parseResponseToJsonMap(this.responseBody);
+            for (Map.Entry<String, String> entry : responseBodyMap.entrySet()) {
+                tokenUriBlock.addField("Token_" + entry.getKey(), entry.getValue());
+            }
+            tokenUriBlock.addField("Token-Value", this.tokenValue);
         }
-        tokenUriBlock.addField("Token-Value", this.tokenValue);
+
         tokenUriBlock.addField("Response_Body", this.responseBody);
         this.erService.write("INTERFACE_OUT", errorER);
         errorER.reject(REJECTED, this.errMsg);
@@ -595,7 +595,7 @@ public final class JettyClient {
         restIfaceER.setOutputType("REST_IFACE");
         restIfaceER.addField("Request", "False");
         restIfaceER.addField("Request-Id", this.requestId);
-        Field responseBlock = restIfaceER.getField("Response");
+        Field responseBlock = restIfaceER.getField(RESPONSE);
         Request request = response.getRequest();
 
         if (request.getURI() != null) {
@@ -623,26 +623,24 @@ public final class JettyClient {
 
         responseBlock.addField("Body", this.responseBody);
         responseBlock.addField("Status", Integer.toString(response.getStatus()));
-//        this.nodeApplication.txRebindAndInherit(restIfaceER);
-
         this.erService.write("INTERFACE_OUT", restIfaceER);
         this.nodeLogger.info("done Write to INTERFACE_OUT link");
+    }
+
+    public Map<String, String> parseResponseToJsonMap(String responseBody) {
+        Map<String, String> map = new HashMap<>();
+        String[] responseBodyParts = responseBody.trim().replace("{", "")
+                .replace("}", "").split(",");
+        for (String responseBodyPart : responseBodyParts) {
+            String[] keyValue = responseBodyPart.trim().replace("\"", "").split(":", 2);
+            map.put(keyValue[0].trim(), keyValue[1].trim());
+        }
+        return map;
     }
 
     public enum UAFlags {
         BASIC,
         DIGEST,
         NONE;
-    }
-
-    public Map<String, String> parseResponseToJsonMap(String responseBody) {
-        Map<String, String> map = new HashMap<>();
-        String[] responseBodyParts = responseBody.trim().replace("{","")
-                .replace("}","").split(",");
-        for (String responseBodyPart : responseBodyParts) {
-            String[] keyValue = responseBodyPart.trim().replace("\"", "").split(":", 2);
-            map.put(keyValue[0].trim(), keyValue[1].trim());
-        }
-        return map;
     }
 }
