@@ -20,23 +20,22 @@ import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class RestClient extends Nodebase implements BusinessLogic, Schedulable
         , TransactionEndpoint, TimerObserver {
-    private final Object transactionLock = new Object();
-
     public static final String OUTPUT_LINK = "INTERFACE_OUT";
     public static final String REJECTED_STORAGE = "REJECTED";
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
     public static final TxeLogger logger = NodeLoggerFactory.getNodeLogger(RestClient.class.getCanonicalName());
+    private final Object transactionLock = new Object();
+    long lastCheck = System.currentTimeMillis();
+    int counter = 0;
+    EventRecord lastEventRecord = null;
     private int clientRequestTimeout;
     private int clientResponseContentBufferSize;
     private int serverRequestSleepTime;
@@ -46,9 +45,6 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     private LinkedBlockingQueue<EventRecord> outputRecords;
     private List<String> incomingRequests;
     private ConcurrentHashMap<String, EventRecord> inputRecords;
-    long lastCheck = System.currentTimeMillis();
-    int counter = 0;
-    EventRecord lastEventRecord = null;
     private int maxNumberOfServerThreads;
     private String jettyDiagnosticLevel;
     private boolean useJettyStdErrLog;
@@ -262,7 +258,7 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
     private void readNodeParameters() {
         this.useToken = this.nodeContext.getParameter("UseToken").equals("Yes");
-        if (this.useToken){
+        if (this.useToken) {
             this.setTokenProperties();
             this.setTokenApiInfo();
         }
@@ -292,16 +288,24 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     }
 
     public void setTokenApiInfo() {
-            this.tokenApiInfo = new ApiInfo();
-            this.tokenApiInfo.setMethod(this.nodeContext.getParameter("Token-Method"))
-                    .setRequestId(this.nodeContext.getParameter("Token-Request-Id"))
-                    .setRequestURI(this.nodeContext.getParameter("Token-Request-URI"));
+        this.tokenApiInfo = new ApiInfo();
+        HashMap<String, String> tokenUriBody = new HashMap<>();
+        tokenUriBody.put("grant_type", "password");
+        tokenUriBody.put("client_id", "usr-mng");
+        tokenUriBody.put("username", this.nodeContext.getParameter("Token-Request-Username"));
+        tokenUriBody.put("password", this.nodeContext.getParameter("Token-Request-Password"));
+        this.tokenApiInfo.setMethod(this.nodeContext.getParameter("Token-Method"))
+                .setRequestId(this.nodeContext.getParameter("Token-Request-Id"))
+                .setRequestURI(this.nodeContext.getParameter("Token-Request-URI"))
+                .setUrlEncodeBody(tokenUriBody);
+
 
     }
 
     public ApiInfo getTokenApiInfo() {
         return tokenApiInfo;
     }
+
     public void setTokenProperties() {
         if (this.nodeContext.parameterExists("TokenType")) {
             String tokenTypeName = this.nodeContext.getParameter("TokenType");
@@ -438,12 +442,6 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
     }
 
     @Override
-    public void setTransactionManager(TransactionManager transactionManager) {
-        logger.info("setTransactionManager started");
-        logger.info("setTransactionManager end");
-    }
-
-    @Override
     public void prepareShutdown() throws Exception {
         logger.info("prepareShutdown started");
         logger.info("prepareShutdown end");
@@ -461,16 +459,6 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
         logger.info("rollback started");
         logger.info("rollback end");
-    }
-
-    private static class OpenTransaction {
-        protected HttpServletRequest req;
-        protected String id;
-
-        OpenTransaction(HttpServletRequest req, String id) {
-            this.req = req;
-            this.id = id;
-        }
     }
 
     public int getClientRequestTimeout() {
@@ -573,6 +561,12 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
         return transactionManager;
     }
 
+    @Override
+    public void setTransactionManager(TransactionManager transactionManager) {
+        logger.info("setTransactionManager started");
+        logger.info("setTransactionManager end");
+    }
+
     public Server getJettyServer() {
         return jettyServer;
     }
@@ -643,5 +637,15 @@ public class RestClient extends Nodebase implements BusinessLogic, Schedulable
 
     public void setSendRequestWaitTime(int sendRequestWaitTime) {
         this.sendRequestWaitTime = sendRequestWaitTime;
+    }
+
+    private static class OpenTransaction {
+        protected HttpServletRequest req;
+        protected String id;
+
+        OpenTransaction(HttpServletRequest req, String id) {
+            this.req = req;
+            this.id = id;
+        }
     }
 }

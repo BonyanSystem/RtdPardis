@@ -380,6 +380,13 @@ public final class JettyClient {
     public void setParamsHeadersToken(EventRecord eventRecord, HttpClient httpClient, Request request) {
         CookieStore cookieStore = httpClient.getCookieStore();
         List<Field> fields = eventRecord.getFields();
+        String body = String.format("grant_type=%s&client_id=%s&username=%s&password=%s",
+                this.nodeApplication.getTokenApiInfo().getUrlEncodeBody().get("grant_type"),
+                this.nodeApplication.getTokenApiInfo().getUrlEncodeBody().get("client_id"),
+                this.nodeApplication.getTokenApiInfo().getUrlEncodeBody().get("username"),
+                this.nodeApplication.getTokenApiInfo().getUrlEncodeBody().get("password")
+                );
+        handleContentType(request, "application/x-www-form-urlencoded", body);
 
         for (Field field : fields) {
             String fieldName = field.getName();
