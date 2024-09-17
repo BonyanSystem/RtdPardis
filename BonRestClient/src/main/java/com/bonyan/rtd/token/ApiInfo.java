@@ -1,5 +1,8 @@
 package com.bonyan.rtd.token;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ApiInfo {
     private String requestId;
     private String method;
@@ -10,6 +13,7 @@ public class ApiInfo {
     private String queryString;
     private String errMsg;
     private String responseBody;
+    private Map<String, String> urlEncodeBody;
 
     public String getRequestId() {
         return requestId;
@@ -90,5 +94,16 @@ public class ApiInfo {
     public ApiInfo setResponseBody(String responseBody) {
         this.responseBody = responseBody;
         return this;
+    }
+
+    public Map<String, String> getUrlEncodeBody() {
+        if (this.urlEncodeBody == null) {
+            this.urlEncodeBody = new HashMap<>();
+        }
+        return urlEncodeBody;
+    }
+
+    public void setUrlEncodeBody(Map<String, String> urlEncodeBody) {
+        this.getUrlEncodeBody().putAll(urlEncodeBody);
     }
 }
