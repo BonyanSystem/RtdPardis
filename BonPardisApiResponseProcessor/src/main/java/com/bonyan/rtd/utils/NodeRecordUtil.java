@@ -9,8 +9,7 @@ public class NodeRecordUtil extends Nodebase {
     public static String getFieldStringValue(EventRecord eventRecord, String fieldName) {
         try {
             Field tmpField = eventRecord.getField(fieldName);
-            String value = tmpField.getValue();
-            return value;
+            return tmpField.getValue();
         } catch (Exception ex) {
             nb_trace("Cant parse " + fieldName, 1);
             return "";
@@ -20,8 +19,7 @@ public class NodeRecordUtil extends Nodebase {
     public static Integer getFieldIntegerValue(EventRecord eventRecord, String fieldName) {
         try {
             Field tmpField = eventRecord.getField(fieldName);
-            Integer value = Integer.valueOf(tmpField.getValue());
-            return value;
+            return Integer.valueOf(tmpField.getValue());
         } catch (Exception ex) {
             nb_trace("Cant parse " + fieldName, 1);
             return 0;

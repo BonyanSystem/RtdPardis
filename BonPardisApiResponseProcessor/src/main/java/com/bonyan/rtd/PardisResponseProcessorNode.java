@@ -10,15 +10,13 @@ public class PardisResponseProcessorNode extends Nodebase implements BusinessLog
 
     private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisResponseProcessorNode.class.getCanonicalName());
 
-    private NodeContext nodeContext;
     private EventRecordService eventRecordService;
     private ResponseProcessorService responseProcessorService;
     
     @Override
     public void init(NodeContext nodeContext){
         nodeLogger.info("nodeLogger: node init start");
-        this.nodeContext = nodeContext;
-        this.responseProcessorService = new ResponseProcessorService(eventRecordService);
+        this.responseProcessorService = new ResponseProcessorService(eventRecordService, nodeContext);
     }
 
     @Override
@@ -48,7 +46,7 @@ public class PardisResponseProcessorNode extends Nodebase implements BusinessLog
 
     @Override
     public void process(EventRecord eventRecord){
-        responseProcessorService.processResponseRecord(eventRecord);
+        responseProcessorService.processResponseRecord();
     }
 
     @Override

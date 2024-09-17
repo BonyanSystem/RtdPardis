@@ -8,7 +8,7 @@ public class Chunk<T> {
     private T contentId;
     private RtdAction<T> rtdAction;
     private RecordList records;
-    private List<String> smsIds;
+    private final List<String> smsIds;
     private Integer status;
     private String errorMessage;
     private String responseBody;
