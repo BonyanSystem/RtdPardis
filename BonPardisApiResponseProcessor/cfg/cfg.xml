@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configuration elversion="6.1">
     <name>MCI_CFG_BON_PARDIS_RESPONSE_PROCESSOR</name>
-    <version major="1" minor="0" defect="0" patch="PRE_03"/>
+    <version major="1" minor="0" defect="0" patch="PRE_06"/>
     <description>
 
-	</description>
+    </description>
     <type>
         <collector>false</collector>
         <intermediate>false</intermediate>
@@ -23,13 +23,13 @@
         <realtime>false</realtime>
     </attributes>
     <scalability>
-        <free></free>
+        <free/>
     </scalability>
     <parameters>
         <parameter name="InitialJavaHeapSize">
             <value>128M</value>
             <description>Defines the initial size of java heap memory.
-			</description>
+            </description>
             <value_type>
                 <any/>
             </value_type>
@@ -56,7 +56,7 @@
         <parameter name="MaxJavaHeapSize">
             <value>128M</value>
             <description>Defines the maximum size of java heap memory.
-			</description>
+            </description>
             <value_type>
                 <any/>
             </value_type>
@@ -88,10 +88,14 @@
     <libraries>
         <library name="MCP_LIB_JAVANODE" min_major="1" min_minor="0" min_defect="0" exactversion="false"/>
     </libraries>
-    <storages/>
+    <storages>
+        <storage name="REJECTED">
+            <description>Rejected records</description>
+        </storage>
+    </storages>
     <links>
         <link>FAILED</link>
-	<link>SUCCEED</link>
+        <link>SUCCEED</link>
     </links>
     <auditkeys/>
 </configuration>

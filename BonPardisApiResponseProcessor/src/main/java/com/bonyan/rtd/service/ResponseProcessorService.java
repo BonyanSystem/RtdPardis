@@ -80,7 +80,7 @@ public class ResponseProcessorService extends Nodebase {
         tempRecord.addField("action_id", chunk.getRtdAction().getActionId());
         tempRecord.addField("content_id", chunk.getRtdAction().getContentId());
 
-        if (!chunk.getStatus().equals(200)) {
+        if (chunk.getStatus() == null || !chunk.getStatus().equals(200)) {
             handleFailedStatus(tempRecord, chunk);
         } else {
             if (chunk.getSmsIds().size() != chunk.getRecords().size()) {
@@ -96,7 +96,7 @@ public class ResponseProcessorService extends Nodebase {
 
     private void handleFailedStatus(EventRecord tempRecord, Chunk<String> chunk) {
         tempRecord.addField("error_msg", chunk.getErrorMessage());
-        tempRecord.addField("error_status", chunk.getStatus().toString());
+        tempRecord.addField("error_status", chunk.getStatus() != null ? chunk.getStatus().toString() : "NO_STATUS");
         for (Map.Entry<String, Integer> msisdnPair : chunk.getRecords()) {
             EventRecord newRecord = (EventRecord) tempRecord.copy();
             newRecord.addField(MSISDN, msisdnPair.getKey());
