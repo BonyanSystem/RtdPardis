@@ -24,14 +24,12 @@
 #define DATA_LEN 84
 
 int counter = 0;
-int pcount_downstreams=0;
-int ccount_downstreams=0;
 char add[100];
 char oadd[100];
 char tmp[10];
 char msisdn[20];
 char cid[50];
-char* aid;
+char* aid = NULL;
 char action_add[100];
 char fhandle[50];
 
@@ -69,20 +67,22 @@ node_process (void)
 {
 	DIAG (DIAG_HIGH, "node_process(): Processing Records...");
 	counter=0;
-	pcount_downstreams=0;
 	memset(add,'\0',sizeof(add));
 	memset(oadd,'\0',sizeof(oadd));
 	memset(tmp,'\0',sizeof(tmp));
 	memset(msisdn,'\0',sizeof(msisdn));
 	memset(cid,'\0',sizeof(cid));
+	aid = (char*)malloc(100 * sizeof(char));
+	if (aid == NULL) {
+    return ;
+	}
 	memset(fhandle,'\0',sizeof(fhandle));
-	//int i;
 	strcpy(msisdn,i_get(".profiles.subscriber.id"));
 	
 	i_next("__RULE_ENGINE__");
 	i_enter();
 	if(i_field_exists("ACTIONS")){
-
+		
 		i_next("ACTIONS");
 		i_enter();
 		while(i_next(""))
@@ -101,8 +101,10 @@ node_process (void)
 				o_add_field("content_id",cid);
 				o_add_field("retry_count","0");
 				nb_write_record("OUT_PARDIS");
+				//		i_exit();
 			}
 			i_exit();
+			//	nb_write_record("OUT_PARADIS");
 		}
 		i_exit();
 
@@ -119,15 +121,7 @@ node_process (void)
 			o_enter();
 			if(strcmp(i_get("DOWNSTREAM"),"PARDIS") == 0 || strcmp(i_get("DOWNSTREAM"),"pardis") == 0){
 				strcpy(action_add,i_get_address());
-				
-				/* 
-				char *last_dot = strrchr(action_add,'.');
-				*last_dot = '\0';
-				char *second_last_dot = strrchr(action_add,'.');
-				strcpy(aid, second_last_dot + 1);
-				*/
 				aid = get_block_name(action_add);
-				
 			}
 			o_exit();
 			o_delete(aid);
@@ -286,9 +280,11 @@ node_request (void)
 }
 
 
-/* ----------------------------------------------------------------------
+/*
+----------------------------------------------------------------------
 AddOutData_common function
-----------------------------------------------------------------------*/
+----------------------------------------------------------------------
+*/
 
 
 void remove_period(char *str){
@@ -302,10 +298,9 @@ void remove_period(char *str){
 
 // --------------        cc Function - Get Block Name      ------------
 /*
-This function is to get Action block name based on its absolute path in the 
-ACTIONS Block.
+This funciton is to get the action block name in the ACTIONS block based on the
+absolute path of the block.
 */
-
 
 char*  get_block_name(const char* absolute_path) {
 	char* path = malloc(strlen(absolute_path) + 1 );
