@@ -1,15 +1,15 @@
-Nodeid 1 start 2024-09-13 05:28:45
-Pid : 8627
+Nodeid 1 start 2024-10-29 01:57:58
+Pid : 2620
 
 Input directories : 
-IN:/comptel/elink/catcry/action_bln/in
-#:/comptel/elink/catcry/action_bln/reprocess
+IN:/comptel/elink/catcry/DownstreamSplitter/in
+#:/comptel/elink/catcry/DownstreamSplitter/reprocess
 
 Output directories : 
-OUT_PARDIS -> /comptel/elink/catcry/action_bln/out/OUT_PARDIS
-OUT_CMS -> /comptel/elink/catcry/action_bln/out/OUT_CMS
+OUT_PARDIS -> /comptel/elink/catcry/DownstreamSplitter/out/OUT_PARDIS
+OUT_CMS -> /comptel/elink/catcry/DownstreamSplitter/out/OUT_CMS
 
-Internal storage dir : /comptel/elink/catcry/action_bln/storage
-Discarded files dir : /comptel/elink/catcry/action_bln/discarded
-Auditfile path : /comptel/elink/catcry/action_bln/audit
-Pidfile : /comptel/elink/catcry/action_bln/control/pidfile
+Internal storage dir : /comptel/elink/catcry/DownstreamSplitter/storage
+Discarded files dir : /comptel/elink/catcry/DownstreamSplitter/discarded
+Auditfile path : /comptel/elink/catcry/DownstreamSplitter/audit
+Pidfile : /comptel/elink/catcry/DownstreamSplitter/control/pidfile

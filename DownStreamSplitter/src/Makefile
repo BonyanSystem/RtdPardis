@@ -38,7 +38,7 @@ CPP=CC
 LD=/usr/bin/ld
 CFLAGS= -Wall -fPIC $(INCLUDEPATH)
 CPPFLAGS= -Wall -fPIC $(INCLUDEPATH)
-LDFLAGS= -shared $(LIBPATH) -lnodebase 
+LDFLAGS= -shared $(LIBPATH) -lnodebase
 
 # top-level rule, to compile everything.
 all: $(APP)
