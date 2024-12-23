@@ -1,0 +1,12 @@
+/PardisEncoder/audit/
+/PardisEncoder/bin/
+/PardisEncoder/bkp/
+/PardisEncoder/control/
+/PardisEncoder/discarded/
+/PardisEncoder/in/
+/PardisEncoder/log/
+/PardisEncoder/out/
+/PardisEncoder/rejected/
+/PardisEncoder/reprocess/
+/PardisEncoder/storage/
+/PardisEncoder/temp/
