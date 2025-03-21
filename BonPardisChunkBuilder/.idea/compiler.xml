@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="BonCmsPardis_pro1" />
+        <module name="BonPardisChunkBuilder" />
       </profile>
     </annotationProcessing>
   </component>

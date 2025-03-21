@@ -1,9 +1,9 @@
 /************************** File Information ************************************
- * File Name                     :  RTD_ACTION_SPLITTER.c                      		*
- * Client                        :  			                          *
- * Application                   :                              		*
+ * File Name                     :  RTD_ACTION_SPLITTER.c                      	*
+ * Client                        :  			                          		*
+ * Application                   :                              				*
  * Functionality/Description     :  Performs conversion and validation          *
- * Last modified/Latest version  :                                  *
+ * Last modified/Latest version  :                                  			*
  * Last modified/Latest version  :  1.0.0                                       *
  *******************************************************************************/
 
@@ -28,12 +28,23 @@ char add[100];
 char oadd[100];
 char tmp[10];
 char msisdn[20];
+char logicId[20];
+char logicName[50];
 char cid[50];
 char* aid = NULL;
 char action_add[100];
 char fhandle[50];
 
 char*  get_block_name(const char* absolute_path);
+
+
+struct Logix {
+	int logicId;
+	char logicName[50];
+{
+	/* data */
+};
+
 /***********************************************************************
  *
  * Reserved functions
@@ -71,6 +82,8 @@ node_process (void)
 	memset(oadd,'\0',sizeof(oadd));
 	memset(tmp,'\0',sizeof(tmp));
 	memset(msisdn,'\0',sizeof(msisdn));
+	memset(logicId,'\0',sizeof(logicId));
+	memset(logicName,'\0',sizeof(logicName));
 	memset(cid,'\0',sizeof(cid));
 	aid = (char*)malloc(100 * sizeof(char));
 	if (aid == NULL) {
@@ -79,8 +92,42 @@ node_process (void)
 	memset(fhandle,'\0',sizeof(fhandle));
 	strcpy(msisdn,i_get(".profiles.subscriber.id"));
 	
+
+	// ---------------            PARDIS out Preparing           ---------------------
 	i_next("__RULE_ENGINE__");
 	i_enter();
+	i_next("TRIGGERED_ACTIONS")
+	i_enter();
+	while (i_next("")) {
+		strcpy(logicId,i_get_field_name());
+		strcpy(logicName, i_get(logicId));
+		i_exit();
+		// now we are in __RULE_ENGINE__ Block
+		i_next("logicName")
+		i_enter();
+		if(strcmp(i_get("DOWNSTREAM"),"PARDIS") == 0 || strcmp(i_get("DOWNSTREAM"),"pardis") == 0){
+				nb_new_record();
+				
+				// cc getting action_id from Blocks name using absolute address:
+				strcpy(action_add,i_get_address());
+				aid = get_block_name(action_add);
+				strcpy(cid,i_get("CONTENT_ID"));
+				
+				o_add_field("msisdn",msisdn);
+				o_add_field("logic_id",logicId);
+				o_add_field("logic_name",logicName);
+				o_add_field("action_id",aid);
+				o_add_field("content_id",cid);
+				o_add_field("retry_count","0");
+				nb_write_record("OUT_PARDIS");
+				//		i_exit();
+			}
+		i_exit();
+		i_next("TRIGGERED_ACTIONS");
+		i_enter();
+
+	}
+/*
 	if(i_field_exists("ACTIONS")){
 		
 		i_next("ACTIONS");
@@ -107,6 +154,7 @@ node_process (void)
 			//	nb_write_record("OUT_PARADIS");
 		}
 		i_exit();
+*/
 
 
 		// ---------------            CMS out Preparing           ---------------------
@@ -295,13 +343,13 @@ void remove_period(char *str){
 	}
 }
 
-
-// --------------        cc Function - Get Block Name      ------------
+//------------------------------------------------------------------------------
+// --------------        cc Function - Get Block Name      ---------------------
 /*
 This funciton is to get the action block name in the ACTIONS block based on the
 absolute path of the block.
 */
-
+//------------------------------------------------------------------------------
 char*  get_block_name(const char* absolute_path) {
 	char* path = malloc(strlen(absolute_path) + 1 );
 	if (path == NULL) {
@@ -316,6 +364,8 @@ char*  get_block_name(const char* absolute_path) {
 	free (path);
 	return result;
 }
+
+
 
 
 /* FUNCTION:  lowercase - Function to convert a string to lowercase string
@@ -343,3 +393,13 @@ void uppercase(const char *input,char *output)
 }
 
 
+//------------------------------------------------------------------------------
+// --------------    cc Function - Insert To Logix List    ---------------------
+void insertLogix(struct Logix logix[], int *csize, int id, char name[]) 
+{
+	if (*csize > MAX_LOGIX_SIZE) {
+		return;
+	}
+ };
+
+//------------------------------------------------------------------------------

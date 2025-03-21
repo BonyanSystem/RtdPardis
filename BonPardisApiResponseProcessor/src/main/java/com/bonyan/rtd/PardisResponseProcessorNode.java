@@ -10,13 +10,15 @@ public class PardisResponseProcessorNode extends Nodebase implements BusinessLog
 
     private static final TxeLogger nodeLogger = NodeLoggerFactory.getNodeLogger(PardisResponseProcessorNode.class.getCanonicalName());
 
+    private NodeContext nodeContext;
     private EventRecordService eventRecordService;
     private ResponseProcessorService responseProcessorService;
+    private NodeParameters nodeParameters;
     
     @Override
     public void init(NodeContext nodeContext){
         nodeLogger.info("nodeLogger: node init start");
-        this.responseProcessorService = new ResponseProcessorService(eventRecordService, nodeContext);
+        this.responseProcessorService = new ResponseProcessorService(eventRecordService, nodeContext, nodeParameters);
     }
 
     @Override
@@ -46,6 +48,7 @@ public class PardisResponseProcessorNode extends Nodebase implements BusinessLog
 
     @Override
     public void process(EventRecord eventRecord){
+
         responseProcessorService.processResponseRecord();
     }
 
@@ -58,5 +61,16 @@ public class PardisResponseProcessorNode extends Nodebase implements BusinessLog
     @Override
     public void schedule(){
         nodeLogger.info("nodeLogger: node schedule start");
+    }
+
+
+    public class NodeParameters {
+        private final Integer maxSendRetryCount;
+        public NodeParameters() {
+            this.maxSendRetryCount = nodeContext.getParameterInt("max-retry-count");
+        }
+        public Integer getMaxSendRetryCount() {
+            return maxSendRetryCount;
+        }
     }
 }

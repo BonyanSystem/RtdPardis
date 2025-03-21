@@ -6,6 +6,8 @@ import com.comptel.eventlink.core.Nodebase;
 import com.comptel.mc.node.EventRecord;
 import com.comptel.mc.node.EventRecordService;
 import com.comptel.mc.node.NodeContext;
+import com.bonyan.rtd.PardisResponseProcessorNode;
+
 
 import java.util.AbstractMap;
 import java.util.List;
@@ -16,13 +18,18 @@ public class ResponseProcessorService extends Nodebase {
     public static final String RETRY_COUNT = "retry_count";
     public static final String TYPE = "type";
     public static final String FAILED = "FAILED";
+    public static final String TO_RETRY = "TO_RETRY";
     public static final String SUCCEED = "SUCCEED";
+
     private final EventRecordService eventRecordService;
+    private final PardisResponseProcessorNode.NodeParameters nodeParameters;
     private final NodeContext context;
 
-    public ResponseProcessorService(EventRecordService eventRecordService, NodeContext context) {
+
+    public ResponseProcessorService(EventRecordService eventRecordService, NodeContext context, PardisResponseProcessorNode.NodeParameters nodeParameters) {
         this.eventRecordService = eventRecordService;
         this.context = context;
+        this.nodeParameters = nodeParameters;
     }
 
     public static boolean isNumeric(String input) {
@@ -99,16 +106,27 @@ public class ResponseProcessorService extends Nodebase {
     private void handleFailedStatus(EventRecord tempRecord, Chunk<String> chunk) {
         tempRecord.addField("error_msg", chunk.getErrorMessage());
         tempRecord.addField("error_status", chunk.getStatus()==null? "NO_STATUS": chunk.getStatus().toString());
+        //Integer maxRetryCount = nodeParameters.getMaxSendRetryCount();
+        Integer maxRetryCount = context.getParameterInt("max-retry-count");;
         for (Map.Entry<String, Integer> msisdnPair : chunk.getRecords()) {
             EventRecord newRecord = (EventRecord) tempRecord.copy();
             newRecord.addField(MSISDN, msisdnPair.getKey());
             newRecord.addField(RETRY_COUNT, msisdnPair.getValue().toString());
-            newRecord.addField(TYPE, FAILED);
-            eventRecordService.write(FAILED, newRecord);
+            Integer retryCount = msisdnPair.getValue();
+            if (retryCount >= maxRetryCount){
+                newRecord.addField(TYPE, FAILED);
+                eventRecordService.write(FAILED, newRecord);
+            }
+            else {
+                newRecord.addField(TYPE, TO_RETRY);
+                eventRecordService.write(TO_RETRY, newRecord);
+            }
+
         }
     }
 
     private void handleSuccessStatus(EventRecord tempRecord, Chunk<String> chunk) {
+        Integer maxRetryCount = context.getParameterInt("max-retry-count");;
         for (int i = 0; i < chunk.getSmsIds().size(); i++) {
             String smsId = chunk.getSmsIds().get(i);
             Map.Entry<String, Integer> msisdnPair = chunk.getRecords().get(i);
@@ -116,14 +134,22 @@ public class ResponseProcessorService extends Nodebase {
             newRecord.addField(MSISDN, msisdnPair.getKey());
             newRecord.addField(RETRY_COUNT, msisdnPair.getValue().toString());
             newRecord.addField("sms_id", smsId);
+            int retryCount = msisdnPair.getValue();
             int errorCode = -1;
             if (isNumeric(smsId)) {
                 errorCode = Integer.parseInt(smsId);
             }
             if (errorCode > 0 && errorCode < 255) {
-                newRecord.addField("error_msg", "pardis api could not send sms to this msisdn");
-                newRecord.addField(TYPE, FAILED);
-                eventRecordService.write(FAILED, newRecord);
+                newRecord.addField("error_msg", "Pardis API could not send SMS to this MSISDN");
+                if (retryCount >= maxRetryCount){
+                    newRecord.addField(TYPE, FAILED);
+                    eventRecordService.write(FAILED, newRecord);
+                }
+                else {
+                    newRecord.addField(TYPE, TO_RETRY);
+                    eventRecordService.write(TO_RETRY, newRecord);
+                }
+
             } else {
                 newRecord.addField(TYPE, SUCCEED);
                 eventRecordService.write(SUCCEED, newRecord);

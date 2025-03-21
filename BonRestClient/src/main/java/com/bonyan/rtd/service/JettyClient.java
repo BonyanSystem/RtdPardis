@@ -78,7 +78,8 @@ public final class JettyClient {
     private URI apiUri;
     private URI tokenUri;
     private String errMsg;
-    private String responseBody;
+    private String
+            responseBody;
     private String tokenValue;
 
     public JettyClient(RestClient app) {
