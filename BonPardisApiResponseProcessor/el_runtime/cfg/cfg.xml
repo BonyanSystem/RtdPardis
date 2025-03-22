@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configuration elversion="6.1">
     <name>MCI_CFG_BON_PARDIS_RESPONSE_PROCESSOR</name>
-    <version major="1" minor="1" defect="1" patch="PRE1"/>
+    <version major="1" minor="2" defect="1" patch=""/>
     <description>
 
 	</description>
@@ -108,7 +108,7 @@
     </storages>
     <links>
         <link>SUCCEED</link>
-	<link>TO_RETRY</link>
+	<link>OUT_PARDIS</link>
         <link>FAILED</link>
     </links>
     <auditkeys/>

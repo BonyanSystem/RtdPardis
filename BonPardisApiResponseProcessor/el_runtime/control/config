@@ -23,7 +23,7 @@ DiagnosticFiles         "10"
 DiagnosticLevel         "0,0,0"
 InDataPath              "IN,file:/comptel/elink/catcry/PardisResponseHandler/in"
 OutDataPath             "SUCCEED,file:/comptel/elink/catcry/PardisResponseHandler/out/SUCCEED"
-OutDataPath             "TO_RETRY,file:/comptel/elink/catcry/PardisResponseHandler/out/TO_RETRY"
+OutDataPath             "OUT_PARDIS,file:/comptel/elink/catcry/PardisResponseHandler/out/OUT_PARDIS"
 OutDataPath             "FAILED,file:/comptel/elink/catcry/PardisResponseHandler/out/FAILED"
 RejectedDataPath             "REJECTED:/comptel/elink/catcry/PardisResponseHandler/rejected/REJECTED"
 

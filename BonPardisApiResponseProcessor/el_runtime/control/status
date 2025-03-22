@@ -1,5 +1,5 @@
-Nodeid 1 start 2025-03-22 01:41:13
-Pid : 3456
+Nodeid 1 start 2025-03-22 05:23:25
+Pid : 4208
 
 Input directories : 
 IN:/comptel/elink/catcry/PardisResponseHandler/in
@@ -7,7 +7,7 @@ IN:/comptel/elink/catcry/PardisResponseHandler/in
 
 Output directories : 
 SUCCEED -> /comptel/elink/catcry/PardisResponseHandler/out/SUCCEED
-TO_RETRY -> /comptel/elink/catcry/PardisResponseHandler/out/TO_RETRY
+OUT_PARDIS -> /comptel/elink/catcry/PardisResponseHandler/out/OUT_PARDIS
 FAILED -> /comptel/elink/catcry/PardisResponseHandler/out/FAILED
 REJECTED -> /comptel/elink/catcry/PardisResponseHandler/rejected/REJECTED (rejected)
 

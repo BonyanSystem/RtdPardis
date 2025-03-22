@@ -13,14 +13,19 @@ public class PardisResponseProcessorNode extends Nodebase implements BusinessLog
     private NodeContext nodeContext;
     private EventRecordService eventRecordService;
     private ResponseProcessorService responseProcessorService;
-    private NodeParameters nodeParameters;
+    private PardisResponseProcessorNode.NodeParameters nodeParameters;
     
     @Override
     public void init(NodeContext nodeContext){
         nodeLogger.info("nodeLogger: node init start");
+        this.nodeContext=nodeContext;
+        loadNodeParameters();
         this.responseProcessorService = new ResponseProcessorService(eventRecordService, nodeContext, nodeParameters);
     }
-
+    private void loadNodeParameters() {
+        this.nodeParameters = new NodeParameters();
+        nodeLogger.info("nodeLogger: nodeContext.getParameters:" + nodeContext.getParameters());
+    }
     @Override
     public void flush(){
         nodeLogger.info("nodeLogger: node flush start");

@@ -18,7 +18,7 @@ public class ResponseProcessorService extends Nodebase {
     public static final String RETRY_COUNT = "retry_count";
     public static final String TYPE = "type";
     public static final String FAILED = "FAILED";
-    public static final String TO_RETRY = "TO_RETRY";
+    public static final String OUT_PARDIS = "OUT_PARDIS";
     public static final String SUCCEED = "SUCCEED";
 
     private final EventRecordService eventRecordService;
@@ -26,10 +26,10 @@ public class ResponseProcessorService extends Nodebase {
     private final NodeContext context;
 
 
-    public ResponseProcessorService(EventRecordService eventRecordService, NodeContext context, PardisResponseProcessorNode.NodeParameters nodeParameters) {
+    public ResponseProcessorService(EventRecordService eventRecordService, NodeContext context, PardisResponseProcessorNode.NodeParameters nodeParams) {
         this.eventRecordService = eventRecordService;
         this.context = context;
-        this.nodeParameters = nodeParameters;
+        this.nodeParameters = nodeParams;
     }
 
     public static boolean isNumeric(String input) {
@@ -106,8 +106,8 @@ public class ResponseProcessorService extends Nodebase {
     private void handleFailedStatus(EventRecord tempRecord, Chunk<String> chunk) {
         tempRecord.addField("error_msg", chunk.getErrorMessage());
         tempRecord.addField("error_status", chunk.getStatus()==null? "NO_STATUS": chunk.getStatus().toString());
-        //Integer maxRetryCount = nodeParameters.getMaxSendRetryCount();
-        Integer maxRetryCount = context.getParameterInt("max-retry-count");;
+        Integer maxRetryCount = nodeParameters.getMaxSendRetryCount();
+        //Integer maxRetryCount = context.getParameterInt("max-retry-count");;
         for (Map.Entry<String, Integer> msisdnPair : chunk.getRecords()) {
             EventRecord newRecord = (EventRecord) tempRecord.copy();
             newRecord.addField(MSISDN, msisdnPair.getKey());
@@ -118,15 +118,16 @@ public class ResponseProcessorService extends Nodebase {
                 eventRecordService.write(FAILED, newRecord);
             }
             else {
-                newRecord.addField(TYPE, TO_RETRY);
-                eventRecordService.write(TO_RETRY, newRecord);
+                newRecord.addField(TYPE, OUT_PARDIS);
+                eventRecordService.write(OUT_PARDIS, newRecord);
             }
 
         }
     }
 
     private void handleSuccessStatus(EventRecord tempRecord, Chunk<String> chunk) {
-        Integer maxRetryCount = context.getParameterInt("max-retry-count");;
+        Integer maxRetryCount = nodeParameters.getMaxSendRetryCount();
+        //int maxRetryCount = context.getParameterInt("max-retry-count");
         for (int i = 0; i < chunk.getSmsIds().size(); i++) {
             String smsId = chunk.getSmsIds().get(i);
             Map.Entry<String, Integer> msisdnPair = chunk.getRecords().get(i);
@@ -146,8 +147,8 @@ public class ResponseProcessorService extends Nodebase {
                     eventRecordService.write(FAILED, newRecord);
                 }
                 else {
-                    newRecord.addField(TYPE, TO_RETRY);
-                    eventRecordService.write(TO_RETRY, newRecord);
+                    newRecord.addField(TYPE, OUT_PARDIS);
+                    eventRecordService.write(OUT_PARDIS, newRecord);
                 }
 
             } else {

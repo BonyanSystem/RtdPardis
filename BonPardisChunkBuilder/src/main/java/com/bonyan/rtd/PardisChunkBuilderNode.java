@@ -89,7 +89,7 @@ public class PardisChunkBuilderNode extends Nodebase implements BusinessLogic, T
         private final Integer maxUntouchedRecordCount;
 
         public NodeParameters() {
-            this.maxChunkSizeParam = nodeContext.getParameterInt("chunker-max-size");
+            this.maxChunkSizeParam =  nodeContext.getParameterInt("chunker-max-size");
             this.maxSendRetryCount = nodeContext.getParameterInt("max-retry-count");
             this.maxUntouchedRecordCount = nodeContext.getParameterInt("max-untouched-record-count");
         }
